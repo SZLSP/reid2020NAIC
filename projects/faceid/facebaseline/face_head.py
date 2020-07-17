@@ -25,12 +25,9 @@ class FaceHead(nn.Module):
 
         # identity classification layer
         cls_type = cfg.MODEL.HEADS.CLS_LAYER
-        if cls_type == 'linear':
-            self.classifier = nn.Linear(512, num_classes, bias=False)
-        elif cls_type == 'arcface':
-            self.classifier = Arcface(cfg, 512, num_classes)
-        elif cls_type == 'circle':
-            self.classifier = Circle(cfg, 512, num_classes)
+        if cls_type == 'linear':    self.classifier = nn.Linear(512, num_classes, bias=False)
+        elif cls_type == 'arcface': self.classifier = ArcSoftmax(cfg, 512, num_classes)
+        elif cls_type == 'circle':  self.classifier = CircleSoftmax(cfg, 512, num_classes)
         else:
             raise KeyError(f"{cls_type} is invalid, please choose from "
                            f"'linear', 'arcface' and 'circle'.")

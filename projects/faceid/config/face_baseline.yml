@@ -1,0 +1,76 @@
+MODEL:
+  META_ARCHITECTURE: 'Baseline'
+
+  BACKBONE:
+    NAME: "build_resnetIR_backbone"
+    DEPTH: 50
+    LAST_STRIDE: 2
+    NORM_SPLIT: 1
+    PRETRAIN: False
+    WITH_IBN: False
+    WITH_NL: False
+    WITH_SE: False
+
+  HEADS:
+    NAME: "FaceHead"
+    CLS_LAYER: circle
+    IN_FEAT: 512
+    NORM: BN
+    NORM_SPLIT: 1
+    SCALE: 128
+    MARGIN: 0.35
+
+  LOSSES:
+    NAME: ("CrossEntropyLoss",)
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.
+
+DATASETS:
+  NAMES: ("CASIAWebFace",)
+  TESTS: ("CASIAWebFace",)
+
+INPUT:
+  SIZE_TRAIN: [128, 128]
+  SIZE_TEST: [128, 128]
+  DO_AUGMIX: False
+  DO_AUTOAUG: False
+  DO_CJ: False
+  DO_FLIP: True
+  DO_PAD: False
+  FLIP_PROB: 0.5
+  PADDING: 10
+  PADDING_MODE: constant
+  REA:
+    ENABLED: False
+  RPT:
+    ENABLED: False
+    PROB: 0.5
+
+DATALOADER:
+  PK_SAMPLER: False
+  NUM_WORKERS: 8
+
+SOLVER:
+  BASE_LR: 0.01
+  BIAS_LR_FACTOR: 2.0
+
+  ETA_MIN_LR: 7.7e-05
+  FREEZE_ITERS: 0
+  GAMMA: 0.1
+  HEADS_LR_FACTOR: 1.0
+  IMS_PER_BATCH: 64
+
+  MAX_ITER: 90
+  MOMENTUM: 0.9
+  OPT: SGD
+  SCHED: "WarmupCosineAnnealingLR"
+  DELAY_ITERS: 5
+  STEPS: [30, 50]
+
+  CHECKPOINT_PERIOD: 6000
+
+  WARMUP_FACTOR: 0.01
+  WARMUP_ITERS: 5
+
+OUTPUT_DIR: "projects/facerecog/logs/test_model"

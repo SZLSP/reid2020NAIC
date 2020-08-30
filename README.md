@@ -4,39 +4,39 @@ FastReID is a research platform that implements state-of-the-art re-identificati
 
 ## What's New
 
-- [Aug 2020] [Model Distillation](https://github.com/JDAI-CV/fast-reid/tree/master/projects/DistillReID) is supported, thanks for [guan'an wang](https://github.com/wangguanan)'s contribution.
+- [Aug 2020] [Model Distillation](projects/DistillReID) is supported, thanks for [guan'an wang](https://github.com/wangguanan)'s contribution.
 - [Aug 2020] ONNX/TensorRT converter is supported.
 - [Jul 2020] Distributed training with multiple GPUs, it trains much faster.
 - [Jul 2020] `MAX_ITER` in config means `epoch`, it will auto scale to maximum iterations.
 - Includes more features such as circle loss, abundant visualization methods and evaluation metrics, SoTA results on conventional, cross-domain, partial and vehicle re-id, testing on multi-datasets simultaneously, etc.
-- Can be used as a library to support [different projects](https://github.com/JDAI-CV/fast-reid/tree/master/projects) on top of it. We'll open source more research projects in this way.
+- Can be used as a library to support [different projects](projects) on top of it. We'll open source more research projects in this way.
 - Remove [ignite](https://github.com/pytorch/ignite)(a high-level library) dependency and powered by [PyTorch](https://pytorch.org/).
 
 We write a [chinese blog](https://l1aoxingyu.github.io/blogpages/reid/2020/05/29/fastreid.html) about this toolbox.
 
 ## Installation
 
-See [INSTALL.md](https://github.com/JDAI-CV/fast-reid/blob/master/docs/INSTALL.md).
+See [INSTALL.md](docs/INSTALL.md).
 
 ## Quick Start
 
 The designed architecture follows this guide [PyTorch-Project-Template](https://github.com/L1aoXingyu/PyTorch-Project-Template), you can check each folder's purpose by yourself.
 
-See [GETTING_STARTED.md](https://github.com/JDAI-CV/fast-reid/blob/master/docs/GETTING_STARTED.md).
+See [GETTING_STARTED.md](docs/GETTING_STARTED.md).
 
-Learn more at out [documentation](). And see [projects/](https://github.com/JDAI-CV/fast-reid/tree/master/projects) for some projects that are build on top of fastreid.
+Learn more at out [documentation](docs). And see [projects/](projects) for some projects that are build on top of fastreid.
 
 ## Model Zoo and Baselines
 
-We provide a large set of baseline results and trained models available for download in the [Fastreid Model Zoo](https://github.com/JDAI-CV/fast-reid/blob/master/docs/MODEL_ZOO.md).
+We provide a large set of baseline results and trained models available for download in the [Fastreid Model Zoo](docs/MODEL_ZOO.md).
 
 ## Deployment
 
-We provide some examples and scripts to convert fastreid model to Caffe, ONNX and TensorRT format in [Fastreid deploy](https://github.com/JDAI-CV/fast-reid/blob/master/tools/deploy).
+We provide some examples and scripts to convert fastreid model to Caffe, ONNX and TensorRT format in [Fastreid deploy](tools/deploy).
 
 ## License
 
-Fastreid is released under the [Apache 2.0 license](https://github.com/JDAI-CV/fast-reid/blob/master/LICENSE).
+Fastreid is released under the [Apache 2.0 license](LICENSE).
 
 ## Citing Fastreid
 

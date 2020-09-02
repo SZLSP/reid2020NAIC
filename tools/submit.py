@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""
-@author:  sherlock
-@contact: sherlockliao01@gmail.com
-"""
+
 
 import logging
 import os
@@ -31,6 +28,7 @@ from torch.functional import F
 import json
 from tqdm import tqdm
 
+
 class NAICSubmiter(DefaultPredictor):
     def __init__(self,cfg):
         super(NAICSubmiter,self).__init__(cfg)
@@ -42,7 +40,7 @@ class NAICSubmiter(DefaultPredictor):
         results = OrderedDict()
 
         logger.info("Prepare testing set")
-        data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name)
+        data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name,use_testing=True)
         # When evaluators are passed in as arguments,
         # implicitly assume that evaluators can be created before data_loader.
 
@@ -136,9 +134,6 @@ class NAICSubmiter(DefaultPredictor):
             json.dump(submit,f)
 
 
-
-
-
     @staticmethod
     def cal_dist(metric: str, query_feat: torch.tensor, gallery_feat: torch.tensor):
         assert metric in ["cosine", "euclidean"], "must choose from [cosine, euclidean], but got {}".format(metric)
@@ -169,7 +164,7 @@ def setup(args):
 def main(args):
     cfg = setup(args)
     submiter = NAICSubmiter(cfg)
-    # submiter.evaluation()
+    submiter.evaluation()
     submiter.submit()
 
 

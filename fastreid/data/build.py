@@ -58,11 +58,11 @@ def build_reid_train_loader(cfg):
     return train_loader
 
 
-def build_reid_test_loader(cfg, dataset_name):
+def build_reid_test_loader(cfg, dataset_name, **kwargs):
     cfg = cfg.clone()
     cfg.defrost()
     
-    dataset = DATASET_REGISTRY.get(dataset_name)(root=_root)
+    dataset = DATASET_REGISTRY.get(dataset_name)(root=_root,**kwargs)
     if comm.is_main_process():
         dataset.show_test()
     test_items = dataset.query + dataset.gallery

@@ -16,7 +16,7 @@
 
 
 ```bash
-pip install yacs tensorboard gdown sklearn termcolor tabulate faiss
+pip install yacs Cython tensorboard gdown sklearn termcolor tabulate faiss
 ```
 
 ```bash

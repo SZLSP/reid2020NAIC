@@ -12,6 +12,8 @@ import numpy as np
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
+from torch.cuda.amp import autocast, GradScaler
+
 import fastreid.utils.comm as comm
 from fastreid.utils.events import EventStorage
 
@@ -163,7 +165,7 @@ class SimpleTrainer(TrainerBase):
     or write your own training loop.
     """
 
-    def __init__(self, model, data_loader, optimizer):
+    def __init__(self, model, data_loader, optimizer, scaler=GradScaler()):
         """
         Args:
             model: a torch Module. Takes a data from data_loader and returns a
@@ -186,6 +188,8 @@ class SimpleTrainer(TrainerBase):
         self._data_loader_iter = iter(data_loader)
         self.optimizer = optimizer
 
+        self.scaler = scaler
+
     def run_step(self):
         """
         Implement the standard training logic described above.
@@ -201,6 +205,15 @@ class SimpleTrainer(TrainerBase):
         """
         If your want to do something with the heads, you can wrap the model.
         """
+        # with autocast():
+        #     outputs, targets = self.model(data)
+        #
+        #     # Compute loss
+        #     if isinstance(self.model, DistributedDataParallel):
+        #         loss_dict = self.model.module.losses(outputs, targets)
+        #     else:
+        #         loss_dict = self.model.losses(outputs, targets)
+
         outputs, targets = self.model(data)
 
         # Compute loss
@@ -209,13 +222,18 @@ class SimpleTrainer(TrainerBase):
         else:
             loss_dict = self.model.losses(outputs, targets)
 
+        self.optimizer.zero_grad()
+
+        # for loss in loss_dict.values():
+        #     self.scaler.scale(loss).backward()
         losses = sum(loss_dict.values())
 
         """
         If you need accumulate gradients or something similar, you can
         wrap the optimizer with your custom `zero_grad()` method.
         """
-        self.optimizer.zero_grad()
+
+        # self.scaler.step(self.optimizer)
         losses.backward()
 
         with torch.cuda.stream(torch.cuda.Stream()):
@@ -229,6 +247,7 @@ class SimpleTrainer(TrainerBase):
         wrap the optimizer with your custom `step()` method.
         """
         self.optimizer.step()
+        # self.scaler.update()
 
     def _detect_anomaly(self, losses, loss_dict):
         if not torch.isfinite(losses).all():

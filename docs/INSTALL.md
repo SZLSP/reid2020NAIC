@@ -13,3 +13,12 @@
 - termcolor
 - tabulate
 - [faiss](https://github.com/facebookresearch/faiss) `pip install faiss-cpu`
+
+
+```bash
+pip install yacs tensorboard gdown sklearn termcolor tabulate faiss
+```
+
+```bash
+cd fastreid/evaluation/rank_cylib; make all
+```

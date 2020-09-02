@@ -14,9 +14,9 @@
 - tabulate
 - [faiss](https://github.com/facebookresearch/faiss) `pip install faiss-cpu`
 
-
+Quick install:
 ```bash
-pip install yacs Cython tensorboard gdown sklearn termcolor tabulate faiss
+pip install yacs Cython tensorboard gdown sklearn termcolor tabulate faiss-cpu
 ```
 
 ```bash

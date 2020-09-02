@@ -100,7 +100,7 @@ class ReidEvaluator(DatasetEvaluator):
             gallery_features = F.normalize(gallery_features, dim=1)
 
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
-
+        metric_method = self.cfg.TEST.METRIC_METHOD
         if self.cfg.TEST.RERANK.ENABLED:
             logger.info("Test with rerank setting")
             k1 = self.cfg.TEST.RERANK.K1
@@ -113,18 +113,18 @@ class ReidEvaluator(DatasetEvaluator):
             gallery_features = gallery_features.numpy()
             cmc, all_AP, all_INP = evaluate_rank(re_dist, query_features, gallery_features,
                                                  query_pids, gallery_pids, query_camids,
-                                                 gallery_camids, use_distmat=True)
+                                                 gallery_camids, use_distmat=True,metric_method=metric_method)
         else:
             query_features = query_features.numpy()
             gallery_features = gallery_features.numpy()
             cmc, all_AP, all_INP = evaluate_rank(dist, query_features, gallery_features,
                                                  query_pids, gallery_pids, query_camids, gallery_camids,
-                                                 use_distmat=False)
+                                                 use_distmat=False,metric_method=metric_method)
         mAP = np.mean(all_AP)
         mINP = np.mean(all_INP)
         for r in [1, 5, 10]:
             self._results['Rank-{}'.format(r)] = cmc[r - 1]
-        self._results['mAP'] = mAP
+        self._results['mAP@200'] = mAP
         self._results['mINP'] = mINP
 
         if self.cfg.TEST.ROC_ENABLED:

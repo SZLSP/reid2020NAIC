@@ -56,6 +56,21 @@ print('Python time: {} s'.format(pytime))
 print('Cython time: {} s'.format(cytime))
 print('CMC Cython is {} times faster than python\n'.format(pytime / cytime))
 
+print('=> Using NAIC metric')
+pytime = timeit.timeit(
+    'evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank, use_distmat=True, use_cython=False,metric_method="naic")',
+    setup=setup,
+    number=20
+)
+cytime = timeit.timeit(
+    'evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank, use_distmat=True, use_cython=True,metric_method="naic")',
+    setup=setup,
+    number=20
+)
+print('Python time: {} s'.format(pytime))
+print('Cython time: {} s'.format(cytime))
+print('NAIC Cython is {} times faster than python\n'.format(pytime / cytime))
+
 print('=> Using ROC metric')
 pytime = timeit.timeit(
     'evaluate_roc(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, use_cython=False)',
@@ -98,6 +113,29 @@ cmc_cy_d, mAP_cy_d, mINP_cy_d = evaluate_rank(distmat, q_feats, g_feats, q_pids,
                                               use_distmat=True, use_cython=True)
 cmc_cy, mAP_cy, mINP_cy = evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank,
                                         use_distmat=False, use_cython=True)
+np.testing.assert_allclose(cmc_cy_d, cmc_cy, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mAP_cy_d, mAP_cy, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mINP_cy_d, mINP_cy, rtol=1e-3, atol=1e-6)
+print('Results between distmat and features are the same in cython!')
+
+np.testing.assert_allclose(cmc_py, cmc_cy, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mAP_py, mAP_cy, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mINP_py, mINP_cy, rtol=1e-3, atol=1e-6)
+print('Rank results between python and cython are the same!')
+print('NAIC testing' + '-'*20)
+cmc_py_d, mAP_py_d, mINP_py_d = evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank,
+                                              use_distmat=True, use_cython=False,metric_method='naic')
+cmc_py, mAP_py, mINP_py = evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank,
+                                        use_distmat=False, use_cython=False,metric_method='naic')
+np.testing.assert_allclose(cmc_py_d, cmc_py, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mAP_py_d, mAP_py, rtol=1e-3, atol=1e-6)
+np.testing.assert_allclose(mINP_py_d, mINP_py, rtol=1e-3, atol=1e-6)
+print('Results between distmat and features are the same in python!')
+
+cmc_cy_d, mAP_cy_d, mINP_cy_d = evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank,
+                                              use_distmat=True, use_cython=True,metric_method='naic')
+cmc_cy, mAP_cy, mINP_cy = evaluate_rank(distmat, q_feats, g_feats, q_pids, g_pids, q_camids, g_camids, max_rank,
+                                        use_distmat=False, use_cython=True,metric_method='naic')
 np.testing.assert_allclose(cmc_cy_d, cmc_cy, rtol=1e-3, atol=1e-6)
 np.testing.assert_allclose(mAP_cy_d, mAP_cy, rtol=1e-3, atol=1e-6)
 np.testing.assert_allclose(mINP_cy_d, mINP_cy, rtol=1e-3, atol=1e-6)

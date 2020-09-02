@@ -266,6 +266,12 @@ class PeriodicCheckpointer:
         self.checkpointer = checkpointer
         self.period = int(period)
         self.max_iter = max_iter
+        self.best_score = self.checkpointer.checkpointables.get('best_score') or 0
+
+    def get_naic_score(self,latest_scalars):
+        rank1 = latest_scalars.get('Rank-1') or 0
+        map200 = latest_scalars.get('mAP@200') or 0
+        return rank1 * 0.5 + map200 * 0.5
 
     def step(self, iteration: int, **kwargs: Any):
         """
@@ -276,8 +282,16 @@ class PeriodicCheckpointer:
                 :meth:`Checkpointer.save`.
         """
         iteration = int(iteration)
-        additional_state = {"iteration": iteration}
+        additional_state = {"iteration": iteration,'best_score':self.best_score}
         additional_state.update(kwargs)
+        latest_scalars = getattr(self.trainer,'_last_eval_results',{})
+        score = self.get_naic_score(latest_scalars)
+        if score>self.best_score:
+            self.best_score = score
+            additional_state['best_score']=self.best_score
+            self.checkpointer.save(
+                "model_best", **additional_state
+            )
         if (iteration + 1) % self.period == 0:
             self.checkpointer.save(
                 "model_{:07d}".format(iteration), **additional_state

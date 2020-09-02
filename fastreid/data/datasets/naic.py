@@ -90,5 +90,26 @@ class NAICReID(ImageDataset):
         with open(osp.join(naic_root, 'naic.json'), 'w') as f:
             json.dump(naic_json, f)
 
+
+@DATASET_REGISTRY.register()
+class NAICSubmit(ImageDataset):
+    def __init__(self, root='datasets', **kwargs):
+        self.naic_root = osp.join(root, 'naic')
+        required_files = [
+            self.naic_root
+        ]
+        self.check_before_run(required_files)
+        imgs_root = osp.join(self.naic_root,'image_A')
+        train = []
+        query = [(osp.join(imgs_root,'query',img_name),1,1) for img_name
+                 in sorted(os.listdir(osp.join(imgs_root,'query')))]
+        gallery = [(osp.join(imgs_root,'gallery',img_name),1,1) for img_name
+                 in sorted(os.listdir(osp.join(imgs_root,'gallery')))]
+
+
+        super(NAICSubmit, self).__init__(train, query, gallery, **kwargs)
+
+
+
 if __name__ == '__main__':
-    dataset = NAICReID()
+    dataset = NAICSubmit()

@@ -32,6 +32,7 @@ from fastreid.utils.file_io import PathManager
 from fastreid.utils.logger import setup_logger
 from . import hooks
 from .train_loop import SimpleTrainer
+import os
 
 __all__ = ["default_argument_parser", "default_setup", "DefaultPredictor", "DefaultTrainer"]
 
@@ -55,7 +56,6 @@ def default_argument_parser():
     parser.add_argument(
         "--machine-rank", type=int, default=0, help="the rank of this machine (unique per machine)"
     )
-
     # PyTorch still may leave orphan processes in multi-gpu training.
     # Therefore we use a deterministic way to obtain port,
     # so that users are aware of orphan processes by seeing the port occupied.
@@ -67,6 +67,12 @@ def default_argument_parser():
         default=None,
         nargs=argparse.REMAINDER,
     )
+
+    # even though set the MODEL.DEVICE='cuda:1', there will be a little model parameters cached in gpu 0
+    # so use the python xxx.py --gpu-id 1 to make sure there won't be any parameters cached in unexpected gpu
+    parser.add_argument("--gpu-id", type=str, default=0, help='id of to be used gpu')
+    parser.add_argument("--test-permutation", action='store_true',
+                        help='test with the permutation of all reasonable combination of AQE,METRIC and RERANK')
     return parser
 
 

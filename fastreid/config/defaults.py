@@ -161,9 +161,9 @@ _C.INPUT.RPT.PROB = 0.5
 # -----------------------------------------------------------------------------
 _C.DATASETS = CN()
 # List of the dataset names for training
-_C.DATASETS.NAMES = ("Market1501",)
+_C.DATASETS.NAMES = ("NAICReID",)
 # List of the dataset names for testing
-_C.DATASETS.TESTS = ("Market1501",)
+_C.DATASETS.TESTS = ("NAICReID",)
 # Combine trainset and testset joint training
 _C.DATASETS.COMBINEALL = False
 
@@ -233,7 +233,7 @@ _C.SOLVER.IMS_PER_BATCH = 64
 # see 2 images per batch
 _C.TEST = CN()
 
-_C.TEST.EVAL_PERIOD = 20
+_C.TEST.EVAL_PERIOD = 5
 
 # Number of images per batch in one process.
 _C.TEST.IMS_PER_BATCH = 64

@@ -1,0 +1,14 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  PIXEL_MEAN : [96.9, 97.41, 102.255]
+  PIXEL_STD : [58.395, 53.295, 64.515]
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+OUTPUT_DIR: "logs/NAIC/bagtricks_R101-ibn-ms"

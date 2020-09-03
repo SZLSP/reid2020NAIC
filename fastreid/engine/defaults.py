@@ -18,6 +18,8 @@ import torch
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel
 
+from torch.cuda.amp import GradScaler
+
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
 from fastreid.evaluation import (DatasetEvaluator, ReidEvaluator,
                                  inference_on_dataset, print_csv_format)
@@ -205,6 +207,7 @@ class DefaultTrainer(SimpleTrainer):
         cfg = self.auto_scale_hyperparams(cfg, data_loader)
         model = self.build_model(cfg)
         optimizer = self.build_optimizer(cfg, model)
+        scaler = GradScaler()
 
         # For training, wrap with DDP. But don't need this for inference.
         if comm.get_world_size() > 1:
@@ -214,7 +217,7 @@ class DefaultTrainer(SimpleTrainer):
                 model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
             )
 
-        super().__init__(model, data_loader, optimizer)
+        super().__init__(model, data_loader, optimizer, scaler)
 
         self.scheduler = self.build_lr_scheduler(cfg, optimizer)
         # Assume no other objects need to be checkpointed.
@@ -225,6 +228,7 @@ class DefaultTrainer(SimpleTrainer):
             cfg.OUTPUT_DIR,
             save_to_disk=comm.is_main_process(),
             optimizer=optimizer,
+            scaler=scaler,
             scheduler=self.scheduler,
         )
         self.start_iter = 0

@@ -165,7 +165,7 @@ class SimpleTrainer(TrainerBase):
     or write your own training loop.
     """
 
-    def __init__(self, model, data_loader, optimizer, scaler=GradScaler()):
+    def __init__(self, model, data_loader, optimizer, scaler):
         """
         Args:
             model: a torch Module. Takes a data from data_loader and returns a
@@ -205,27 +205,25 @@ class SimpleTrainer(TrainerBase):
         """
         If your want to do something with the heads, you can wrap the model.
         """
-        # with autocast():
-        #     outputs, targets = self.model(data)
+        with autocast():
+            outputs, targets = self.model(data)
+
+            # Compute loss
+            if isinstance(self.model, DistributedDataParallel):
+                loss_dict = self.model.module.losses(outputs, targets)
+            else:
+                loss_dict = self.model.losses(outputs, targets)
+
+        # outputs, targets = self.model(data)
         #
-        #     # Compute loss
-        #     if isinstance(self.model, DistributedDataParallel):
-        #         loss_dict = self.model.module.losses(outputs, targets)
-        #     else:
-        #         loss_dict = self.model.losses(outputs, targets)
+        # # Compute loss
+        # if isinstance(self.model, DistributedDataParallel):
+        #     loss_dict = self.model.module.losses(outputs, targets)
+        # else:
+        #     loss_dict = self.model.losses(outputs, targets)
+        #
+        # self.optimizer.zero_grad()
 
-        outputs, targets = self.model(data)
-
-        # Compute loss
-        if isinstance(self.model, DistributedDataParallel):
-            loss_dict = self.model.module.losses(outputs, targets)
-        else:
-            loss_dict = self.model.losses(outputs, targets)
-
-        self.optimizer.zero_grad()
-
-        # for loss in loss_dict.values():
-        #     self.scaler.scale(loss).backward()
         losses = sum(loss_dict.values())
 
         """
@@ -233,8 +231,10 @@ class SimpleTrainer(TrainerBase):
         wrap the optimizer with your custom `zero_grad()` method.
         """
 
-        # self.scaler.step(self.optimizer)
-        losses.backward()
+        self.scaler.scale(losses).backward()
+
+        # losses.backward()
+        self.scaler.step(self.optimizer)
 
         with torch.cuda.stream(torch.cuda.Stream()):
             metrics_dict = loss_dict
@@ -246,8 +246,8 @@ class SimpleTrainer(TrainerBase):
         If you need gradient clipping/scaling or other processing, you can
         wrap the optimizer with your custom `step()` method.
         """
-        self.optimizer.step()
-        # self.scaler.update()
+        # self.optimizer.step()
+        self.scaler.update()
 
     def _detect_anomaly(self, losses, loss_dict):
         if not torch.isfinite(losses).all():

@@ -35,6 +35,8 @@ class CircleSoftmax(nn.Module):
 
         targets = F.one_hot(targets, num_classes=self._num_classes)
 
+        targets = targets.type(torch.FloatTensor).cuda(s_p.device)
+
         pred_class_logits = targets * s_p + (1.0 - targets) * s_n
 
         return pred_class_logits

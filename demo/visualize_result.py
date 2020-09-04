@@ -6,6 +6,7 @@
 
 import argparse
 import logging
+import os.path as osp
 import sys
 
 import numpy as np
@@ -49,11 +50,12 @@ def get_parser():
     )
     parser.add_argument(
         "--dataset-name",
+        default='NAICReID',
         help="a test dataset name for visualizing ranking list."
     )
     parser.add_argument(
         "--output",
-        default="./vis_rank_list",
+        default="",
         help="a file or directory to save rankling list result.",
 
     )
@@ -69,7 +71,7 @@ def get_parser():
     )
     parser.add_argument(
         "--rank-sort",
-        default="ascending",
+        default="descending",
         help="rank order of visualization images by AP metric",
     )
     parser.add_argument(
@@ -95,6 +97,12 @@ if __name__ == '__main__':
     args = get_parser().parse_args()
     logger = setup_logger()
     cfg = setup_cfg(args)
+    if len(args.output) == 0:
+        args.output = osp.join(cfg.OUTPUT_DIR, 'vis_dir')
+    if len(cfg.MODEL.WEIGHTS) == 0:
+        cfg.defrost()
+        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
+        cfg.freeze()
     test_loader, num_query = build_reid_test_loader(cfg, args.dataset_name)
     demo = FeatureExtractionDemo(cfg, parallel=args.parallel)
 

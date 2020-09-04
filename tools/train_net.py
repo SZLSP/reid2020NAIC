@@ -5,9 +5,10 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import logging
 import os
 import sys
+
+from submit import main as smain
 
 sys.path.append('.')
 
@@ -57,10 +58,18 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES']=args.gpu_id
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     print("Command Line Args:", args)
     launch(
         main,
+        args.num_gpus,
+        num_machines=args.num_machines,
+        machine_rank=args.machine_rank,
+        dist_url=args.dist_url,
+        args=(args,),
+    )
+    launch(
+        smain,
         args.num_gpus,
         num_machines=args.num_machines,
         machine_rank=args.machine_rank,

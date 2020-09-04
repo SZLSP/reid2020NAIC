@@ -1,0 +1,32 @@
+_BASE_: "../Base-Strongerbaseline.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "50x"
+    WITH_IBN: True
+
+  LOSSES:
+    NAME: ("CrossEntropyLoss", "CircleLoss",)
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.0
+    CIRCLE:
+      MARGIN: 0.5
+
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  CT:
+    ENABLED: False
+
+SOLVER:
+  SWA:
+    ENABLED: True
+
+TEST:
+  EVAL_PERIOD: 5
+
+OUTPUT_DIR: "logs/NAIC/strong_R50-ibn-swa"

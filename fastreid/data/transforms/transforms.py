@@ -4,7 +4,7 @@
 @contact: sherlockliao01@gmail.com
 """
 
-__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix',]
+__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose']
 
 import math
 import random
@@ -202,3 +202,20 @@ class AugMix(object):
 
         mixed = (1 - m) * image + m * mix
         return mixed
+
+
+class ColorTranspose(object):
+    def __init__(self, color_offset: list, invert=True):
+        if isinstance(color_offset, list):
+            assert len(color_offset) == 3, f'expect 3 values for R,G,B offset, got {len(color_offset)} values'
+            color_offset = np.asarray(color_offset, dtype=np.uint8)
+            color_offset = color_offset.reshape((1, 1, -1))
+        self.color_offset = color_offset
+        self.invert = invert
+
+    def __call__(self, image):
+        image = np.asarray(image, dtype=np.uint8).copy()
+        if self.invert:
+            image = 255 - image
+        image = (image + self.color_offset) % 255
+        return Image.fromarray(image)

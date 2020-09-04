@@ -1,3 +1,3 @@
-./tools/train_net.py \
-  --config-file ./configs/Market1501/bagtricks_R50.yml \
-  MODEL.DEVICE "cuda:0"
+python ./tools/train_net.py \
+  --config-file ./configs/NAIC/bagtricks_R101-ibn.yml \
+  MODEL.DEVICE "cuda:5"

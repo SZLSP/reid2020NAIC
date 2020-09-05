@@ -76,7 +76,7 @@ class Visualizer:
                 g_idx = self.num_query + sort_idx[i]
                 gallery_info = self.dataset[g_idx]
                 gallery_img = gallery_info['images']
-                cam_id = gallery_info['camid']
+                gallery_name = os.path.split(gallery_info['img_path'])[-1]
                 all_imgs.append(gallery_img)
                 gallery_img = np.rollaxis(np.asarray(gallery_img, dtype=np.uint8), 0, 3)
                 if cmc[i] == 1:
@@ -90,7 +90,7 @@ class Visualizer:
                                                height=gallery_img.shape[0] - 1,
                                                edgecolor=(0, 0, 1), fill=False, linewidth=5))
                 ax.imshow(gallery_img)
-                ax.set_title(f'{self.sim[q_idx, sort_idx[i]]:.3f}/{label}/cam{cam_id}')
+                ax.set_title(f'{self.sim[q_idx, sort_idx[i]]:.3f}/{label}/name{gallery_name[:-4]}')
                 ax.axis("off")
             # if actmap:
             #     act_outputs = []

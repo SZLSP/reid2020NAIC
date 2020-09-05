@@ -24,15 +24,14 @@ from fastreid.evaluation import (DatasetEvaluator, ReidEvaluator,
 from fastreid.modeling.meta_arch import build_model
 from fastreid.solver import build_lr_scheduler, build_optimizer
 from fastreid.utils import comm
-from fastreid.utils.env import seed_all_rng
 from fastreid.utils.checkpoint import Checkpointer
 from fastreid.utils.collect_env import collect_env_info
+from fastreid.utils.env import seed_all_rng
 from fastreid.utils.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 from fastreid.utils.file_io import PathManager
 from fastreid.utils.logger import setup_logger
 from . import hooks
 from .train_loop import SimpleTrainer
-import os
 
 __all__ = ["default_argument_parser", "default_setup", "DefaultPredictor", "DefaultTrainer"]
 
@@ -309,20 +308,21 @@ class DefaultTrainer(SimpleTrainer):
                 cfg.MODEL.FREEZE_LAYERS,
                 cfg.SOLVER.FREEZE_ITERS,
             ))
+
+        def test_and_save_results():
+            self._last_eval_results = self.test(self.cfg, self.model)
+            return self._last_eval_results
+
+        # Do evaluation befor checkpointer, because checkpointer will save the best model
+        # according to the evaluation results.
+        ret.append(hooks.EvalHook(cfg.TEST.EVAL_PERIOD, test_and_save_results))
+
         # Do PreciseBN before checkpointer, because it updates the model and need to
         # be saved by checkpointer.
         # This is not always the best: if checkpointing has a different frequency,
         # some checkpoints may have more precise statistics than others.
         if comm.is_main_process():
             ret.append(hooks.PeriodicCheckpointer(self.checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD))
-
-        def test_and_save_results():
-            self._last_eval_results = self.test(self.cfg, self.model)
-            return self._last_eval_results
-
-        # Do evaluation after checkpointer, because then if it fails,
-        # we can use the saved checkpoint to debug.
-        ret.append(hooks.EvalHook(cfg.TEST.EVAL_PERIOD, test_and_save_results))
 
         if comm.is_main_process():
             # run writers in the end, so that evaluation metrics are written

@@ -150,11 +150,17 @@ _C.INPUT.DO_AUGMIX = False
 _C.INPUT.REA = CN()
 _C.INPUT.REA.ENABLED = False
 _C.INPUT.REA.PROB = 0.5
-_C.INPUT.REA.MEAN = [0.596*255, 0.558*255, 0.497*255]  # [0.485*255, 0.456*255, 0.406*255]
+_C.INPUT.REA.MEAN = [0.596 * 255, 0.558 * 255, 0.497 * 255]  # [0.485*255, 0.456*255, 0.406*255]
 # Random Patch
 _C.INPUT.RPT = CN()
 _C.INPUT.RPT.ENABLED = False
 _C.INPUT.RPT.PROB = 0.5
+
+# Color Transpose
+_C.INPUT.CT = CN()
+_C.INPUT.CT.ENABLED = False
+_C.INPUT.CT.COLOR_OFFSET = [0, 0, 0]
+_C.INPUT.CT.INVERT = True
 
 # -----------------------------------------------------------------------------
 # Dataset
@@ -227,7 +233,7 @@ _C.SOLVER.CHECKPOINT_PERIOD = 20
 # Number of images per batch across all machines.
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
-_C.SOLVER.IMS_PER_BATCH = 64
+_C.SOLVER.IMS_PER_BATCH = 24
 
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch

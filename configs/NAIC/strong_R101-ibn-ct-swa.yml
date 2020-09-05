@@ -1,0 +1,21 @@
+_BASE_: "../Base-Strongerbaseline.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "50x"
+    WITH_IBN: True
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  CT:
+    ENABLED: True
+
+SOLVER:
+  SWA:
+    ENABLED: True
+
+
+OUTPUT_DIR: "logs/NAIC/bagtricks_R101-ibn"

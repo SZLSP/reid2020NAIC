@@ -1,0 +1,15 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+
+DATALOADER:
+  NUM_INSTANCE: 8
+
+DATASETS:
+  NAMES: ("NAICReID","Market1501")
+  TESTS: ("NAICReID",)
+
+OUTPUT_DIR: "logs/NAIC/bagtricks_R101-ibn-i8-da"

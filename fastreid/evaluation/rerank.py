@@ -15,7 +15,7 @@ def re_ranking(q_g_dist, q_q_dist, g_g_dist, k1: int = 20, k2: int = 6, lambda_v
         axis=0)
     original_dist = np.power(original_dist, 2).astype(np.float32)
     original_dist = np.transpose(1. * original_dist / np.max(original_dist, axis=0))
-    V = np.zeros_like(original_dist).astype(np.float32)
+    V = np.zeros_like(original_dist).astype(np.float32)  # V[i,j] indicates the similarity of ith people and jth people
     initial_rank = np.argsort(original_dist).astype(np.int32)
 
     query_num = q_g_dist.shape[0]

@@ -6,8 +6,8 @@
 
 import torchvision.transforms as T
 
-from .transforms import *
 from .autoaugment import AutoAugment
+from .transforms import *
 
 
 def build_transforms(cfg, is_train=True):
@@ -48,6 +48,14 @@ def build_transforms(cfg, is_train=True):
         do_rpt = cfg.INPUT.RPT.ENABLED
         rpt_prob = cfg.INPUT.RPT.PROB
 
+        # color transpose
+        do_ct = cfg.INPUT.CT.ENABLED
+        ct_color_offset = cfg.INPUT.CT.COLOR_OFFSET
+        ct_invert = cfg.INPUT.CT.INVERT
+
+        if do_ct:
+            res.append(ColorTranspose(ct_color_offset, ct_invert))
+
         if do_autoaug:
             res.append(AutoAugment(total_iter))
         res.append(T.Resize(size_train, interpolation=3))
@@ -64,6 +72,7 @@ def build_transforms(cfg, is_train=True):
             res.append(RandomErasing(probability=rea_prob, mean=rea_mean))
         if do_rpt:
             res.append(RandomPatch(prob_happen=rpt_prob))
+
     else:
         size_test = cfg.INPUT.SIZE_TEST
         res.append(T.Resize(size_test, interpolation=3))

@@ -1,0 +1,31 @@
+_BASE_: "../Base-Strongerbaseline.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "50x"
+    WITH_IBN: True
+
+  LOSSES:
+    NAME: ("FocalLoss", "TripletLoss",)
+    FL:
+      SCALE: 1.0
+    TRI:
+      MARGIN: 0.5
+      HARD_MINING: True
+      NORM_FEAT: False
+      SCALE: 1.0
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  CT:
+    ENABLED: False
+
+SOLVER:
+  SWA:
+    ENABLED: True
+
+
+OUTPUT_DIR: "logs/NAIC/strong_R50-ibn-swa-fl"

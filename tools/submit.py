@@ -3,18 +3,16 @@
 
 
 import logging
-import os
 import sys
 
 sys.path.append('.')
 
 from fastreid.config import get_cfg
 from fastreid.engine import DefaultPredictor, default_argument_parser, default_setup, launch
-from fastreid.utils.checkpoint import Checkpointer
 from fastreid.utils import comm
 from collections import OrderedDict
-from fastreid.data import build_reid_test_loader, build_reid_train_loader
-from fastreid.evaluation import (DatasetEvaluator, ReidEvaluator,
+from fastreid.data import build_reid_test_loader
+from fastreid.evaluation import (ReidEvaluator,
                                  inference_on_dataset, print_csv_format)
 from fastreid.evaluation.query_expansion import aqe
 from fastreid.evaluation.rerank import re_ranking
@@ -188,7 +186,7 @@ def main(args):
     cfg = setup(args)
     if len(cfg.MODEL.WEIGHTS)==0:
         cfg.defrost()
-        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR,'model_best.pth')
+        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_final.pth')
         cfg.freeze()
     submiter = NAICSubmiter(cfg)
     if args.test_permutation:

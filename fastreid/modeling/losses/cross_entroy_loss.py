@@ -69,7 +69,7 @@ class CrossEntropyLoss(object):
         """
 
         with torch.no_grad():
-            non_zero_cnt = max(loss.nonzero(as_tuple=False).size(0), 1)
+            non_zero_cnt = max(loss.nonzero().size(0), 1)
 
         loss = loss.sum() / non_zero_cnt
 

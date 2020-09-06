@@ -3,10 +3,31 @@
 @author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
 """
+import os
+import os.path as osp
+
+import cv2
 import numpy as np
 from PIL import Image, ImageOps
+from tqdm import tqdm
 
 from fastreid.utils.file_io import PathManager
+
+
+def edge_detection(img_root, old='naic', _new='edge'):
+    for dirpath, dirnames, filenames in os.walk(img_root):
+        for fn in tqdm(filenames):
+            if fn[-3:] in {'png', 'PNG', 'jpg', 'JPG', 'JPEG'}:
+                new_dir = dirpath.replace(old, _new)
+                os.makedirs(new_dir, exist_ok=True)
+                img = cv2.imread(osp.join(dirpath, fn), 0)
+                x = cv2.Sobel(img, cv2.CV_16S, 1, 0)
+                y = cv2.Sobel(img, cv2.CV_16S, 0, 1)
+                absX = cv2.convertScaleAbs(x)
+                absY = cv2.convertScaleAbs(y)
+
+                dst = cv2.addWeighted(absX, 0.5, absY, 0.5, 0)
+                cv2.imwrite(osp.join(new_dir, fn), dst)
 
 
 def read_image(file_name, format=None):

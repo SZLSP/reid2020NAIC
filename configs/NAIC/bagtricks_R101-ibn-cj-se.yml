@@ -1,0 +1,24 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+    WITH_SE: false
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: true
+
+
+
+
+OUTPUT_DIR: "logs/NAIC/bagtricks_R101-ibn-cf-se"

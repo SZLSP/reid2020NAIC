@@ -162,6 +162,9 @@ _C.INPUT.CT.ENABLED = False
 _C.INPUT.CT.COLOR_OFFSET = [0, 0, 0]
 _C.INPUT.CT.INVERT = True
 
+# to Gray Scale Image
+_C.INPUT.DO_GRAYSCALE = False
+
 # -----------------------------------------------------------------------------
 # Dataset
 # -----------------------------------------------------------------------------

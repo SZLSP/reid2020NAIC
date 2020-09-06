@@ -16,6 +16,9 @@ def build_transforms(cfg, is_train=True):
     if is_train:
         size_train = cfg.INPUT.SIZE_TRAIN
 
+        # Turn all image gray
+        do_greyscale = cfg.INPUT.DO_GRAYSCALE
+
         # augmix augmentation
         do_augmix = cfg.INPUT.DO_AUGMIX
 
@@ -55,6 +58,9 @@ def build_transforms(cfg, is_train=True):
 
         if do_ct:
             res.append(ColorTranspose(ct_color_offset, ct_invert))
+
+        if do_greyscale:
+            res.append(GrayScale())
 
         if do_autoaug:
             res.append(AutoAugment(total_iter))

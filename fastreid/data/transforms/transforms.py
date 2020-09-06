@@ -4,7 +4,7 @@
 @contact: sherlockliao01@gmail.com
 """
 
-__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose']
+__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose', 'GrayScale']
 
 import math
 import random
@@ -14,6 +14,8 @@ import numpy as np
 from PIL import Image
 
 from .functional import to_tensor, augmentations_reid
+
+from torchvision.transforms.functional import to_grayscale
 
 
 class ToTensor(object):
@@ -219,3 +221,11 @@ class ColorTranspose(object):
             image = 255 - image
         image = (image + self.color_offset) % 255
         return Image.fromarray(image)
+
+
+class GrayScale(object):
+    def __init__(self, ):
+        pass
+
+    def __call__(self, image):
+        return to_grayscale(image, num_output_channels=3)

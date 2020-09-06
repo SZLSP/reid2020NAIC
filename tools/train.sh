@@ -16,3 +16,24 @@ python ./tools/train_net.py --config-file ./configs/NAIC/strong_R50-ibn-swa-fl-c
 python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-i8.yml --gpu-id 1 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-i8-05.yml --gpu-id 2 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-i8-da.yml --gpu-id 3 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-cj.yml --gpu-id 0 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-cj-se.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-amS.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-aS.yml --gpu-id 3 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-gem.yml --gpu-id 4 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/bagtricks_R101-ibn-cS.yml --gpu-id 5 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/mgn_R50-ibn.yml --gpu-id 2 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-amp.yml --gpu-id 0 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-fap.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-id.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-st.yml --gpu-id 3 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-xt.yml --gpu-id 4 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-xt-gbn.yml --gpu-id 5 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn0.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn3.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn5.yml --gpu-id 5 --test-permutation
+

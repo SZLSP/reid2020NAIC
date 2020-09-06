@@ -33,6 +33,9 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    if (args.resume or args.eval_only) and len(cfg.MODEL.WEIGHTS) == 0:
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, 'model_best.pth')
+
     cfg.freeze()
     default_setup(cfg, args)
     return cfg

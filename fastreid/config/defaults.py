@@ -30,6 +30,7 @@ _C.MODEL.FREEZE_LAYERS = ['']
 _C.MODEL.BACKBONE = CN()
 
 _C.MODEL.BACKBONE.NAME = "build_resnet_backbone"
+_C.MODEL.BACKBONE.MODEL_NAME = 'efficient-b0'
 _C.MODEL.BACKBONE.DEPTH = "50x"
 _C.MODEL.BACKBONE.LAST_STRIDE = 1
 # Normalization method for the convolution layers.

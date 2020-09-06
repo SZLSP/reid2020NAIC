@@ -186,7 +186,7 @@ def main(args):
     cfg = setup(args)
     if len(cfg.MODEL.WEIGHTS)==0:
         cfg.defrost()
-        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_final.pth')
+        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
         cfg.freeze()
     submiter = NAICSubmiter(cfg)
     if args.test_permutation:

@@ -7,6 +7,7 @@
 from fastreid.layers import *
 from fastreid.utils.weight_init import weights_init_kaiming, weights_init_classifier
 from .build import REID_HEADS_REGISTRY
+from .classsifiers import get_classifier
 
 
 @REID_HEADS_REGISTRY.register()
@@ -28,13 +29,10 @@ class ReductionHead(nn.Module):
 
         # identity classification layer
         cls_type = cfg.MODEL.HEADS.CLS_LAYER
-        if cls_type == 'linear':          self.classifier = nn.Linear(reduction_dim, num_classes, bias=False)
-        elif cls_type == 'arcSoftmax':    self.classifier = ArcSoftmax(cfg, reduction_dim, num_classes)
-        elif cls_type == 'circleSoftmax': self.classifier = CircleSoftmax(cfg, reduction_dim, num_classes)
-        elif cls_type == 'amSoftmax':     self.classifier = AMSoftmax(cfg, reduction_dim, num_classes)
+        if cls_type == 'linear':
+            self.classifier = get_classifier(cfg, cls_type, reduction_dim, num_classes, bias=False)
         else:
-            raise KeyError(f"{cls_type} is invalid, please choose from "
-                           f"'linear', 'arcSoftmax', 'amSoftmax' and 'circleSoftmax'.")
+            self.classifier = get_classifier(cfg, cls_type, reduction_dim, num_classes)
 
         self.classifier.apply(weights_init_classifier)
 

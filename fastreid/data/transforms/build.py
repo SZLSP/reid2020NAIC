@@ -80,6 +80,11 @@ def build_transforms(cfg, is_train=True):
             res.append(RandomPatch(prob_happen=rpt_prob))
 
     else:
+        # Turn all image gray
+        do_greyscale = cfg.INPUT.DO_GRAYSCALE
+
+        if do_greyscale:
+            res.append(GrayScale())
         size_test = cfg.INPUT.SIZE_TEST
         res.append(T.Resize(size_test, interpolation=3))
     res.append(ToTensor())

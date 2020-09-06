@@ -1,11 +1,10 @@
 import sys
-sys.path.insert(0,'.')
-import glob
+sys.path.insert(0, './')
 import os
 import os.path as osp
 from collections import defaultdict
 
-from .bases import ImageDataset
+from fastreid.data.datasets.bases import ImageDataset
 from fastreid.data.datasets import DATASET_REGISTRY
 import numpy as np
 import json
@@ -14,6 +13,7 @@ _NAIC_TRAIN_RATIO = 0.8
 _NAIC_VAL_RATIO = 0.9
 _NAIC_RANDOM_SEED = 2020
 _NAIC_TESTING = False
+_NAIC_MIN_INSTANCE = 1
 
 
 @DATASET_REGISTRY.register()
@@ -78,7 +78,8 @@ class NAICReID(ImageDataset):
 
         naic_json = defaultdict(list)
         for key in train:
-            naic_json['train'].extend(data[key])
+            if len(data[key]) >= _NAIC_MIN_INSTANCE:
+                naic_json['train'].extend(data[key])
 
         def split_query_gallery(keys):
             query = []
@@ -117,4 +118,4 @@ class NAICSubmit(ImageDataset):
 
 
 if __name__ == '__main__':
-    dataset = NAICSubmit()
+    edge_detection('/home/dgy/project/pytorch/fast-reid/datasets/naic')

@@ -5,9 +5,10 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import logging
 import os
 import sys
+
+from submit import main as smain
 
 sys.path.append('.')
 
@@ -32,6 +33,9 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    if (args.resume or args.eval_only) and len(cfg.MODEL.WEIGHTS) == 0:
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, 'model_best.pth')
+
     cfg.freeze()
     default_setup(cfg, args)
     return cfg
@@ -61,6 +65,14 @@ if __name__ == "__main__":
     print("Command Line Args:", args)
     launch(
         main,
+        args.num_gpus,
+        num_machines=args.num_machines,
+        machine_rank=args.machine_rank,
+        dist_url=args.dist_url,
+        args=(args,),
+    )
+    launch(
+        smain,
         args.num_gpus,
         num_machines=args.num_machines,
         machine_rank=args.machine_rank,

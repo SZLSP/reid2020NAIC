@@ -16,6 +16,7 @@ from fastreid.evaluation import (ReidEvaluator,
                                  inference_on_dataset, print_csv_format)
 from fastreid.evaluation.query_expansion import aqe
 from fastreid.evaluation.rerank import re_ranking
+from fastreid.evaluation.fast_reranking import re_ranking as fast_re_ranking
 from fastreid.evaluation import inference_context
 import faiss
 import numpy as np
@@ -123,7 +124,7 @@ class NAICSubmiter(DefaultPredictor):
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
 
         if self.cfg.TEST.RERANK.ENABLED:
-            postfix+='_rerank'
+            postfix += '_rerank'
             use_dist = True
             logger.info("Test with rerank setting")
             k1 = self.cfg.TEST.RERANK.K1
@@ -131,7 +132,11 @@ class NAICSubmiter(DefaultPredictor):
             lambda_value = self.cfg.TEST.RERANK.LAMBDA
             q_q_dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, query_features)
             g_g_dist = self.cal_dist(self.cfg.TEST.METRIC, gallery_features, gallery_features)
-            dist = re_ranking(dist, q_q_dist, g_g_dist, k1, k2, lambda_value)
+
+            if self.cfg.TEST.RERANK.FAST:
+                dist = fast_re_ranking(query_features, gallery_features, k1, k2, lambda_value)
+            else:
+                dist = re_ranking(dist, q_q_dist, g_g_dist, k1, k2, lambda_value)
 
         query_features = query_features.numpy()
         gallery_features = gallery_features.numpy()

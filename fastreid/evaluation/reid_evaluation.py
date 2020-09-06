@@ -14,6 +14,7 @@ from sklearn import metrics
 
 from fastreid.utils import comm
 from .evaluator import DatasetEvaluator
+from .fast_reranking import re_ranking as fast_re_ranking
 from .query_expansion import aqe
 from .rank import evaluate_rank
 from .rerank import re_ranking
@@ -108,12 +109,15 @@ class ReidEvaluator(DatasetEvaluator):
             lambda_value = self.cfg.TEST.RERANK.LAMBDA
             q_q_dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, query_features)
             g_g_dist = self.cal_dist(self.cfg.TEST.METRIC, gallery_features, gallery_features)
-            re_dist = re_ranking(dist, q_q_dist, g_g_dist, k1, k2, lambda_value)
+            if self.cfg.TEST.RERANK.FAST:
+                re_dist = fast_re_ranking(query_features, gallery_features, k1, k2, lambda_value)
+            else:
+                re_dist = re_ranking(dist, q_q_dist, g_g_dist, k1, k2, lambda_value)
             query_features = query_features.numpy()
             gallery_features = gallery_features.numpy()
             cmc, all_AP, all_INP = evaluate_rank(re_dist, query_features, gallery_features,
                                                  query_pids, gallery_pids, query_camids,
-                                                 gallery_camids, use_distmat=True,metric_method=metric_method)
+                                                 gallery_camids, use_distmat=True, metric_method=metric_method)
         else:
             query_features = query_features.numpy()
             gallery_features = gallery_features.numpy()

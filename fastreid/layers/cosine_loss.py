@@ -15,14 +15,14 @@ class AdaCos(nn.Module):
         self.num_classes = num_classes
         self.s = math.sqrt(2) * math.log(num_classes - 1)
         self.m = m
-        self.W = Parameter(torch.FloatTensor(num_classes, num_features))
-        nn.init.xavier_uniform_(self.W)
+        self.weight = Parameter(torch.FloatTensor(num_classes, num_features))
+        nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, label=None):
         # normalize features
         x = F.normalize(input)
         # normalize weights
-        W = F.normalize(self.W)
+        W = F.normalize(self.weight)
         # dot product
         logits = F.linear(x, W)
         if label is None:
@@ -51,14 +51,14 @@ class ArcFace(nn.Module):
         self.num_classes = num_classes
         self.s = s
         self.m = m
-        self.W = Parameter(torch.FloatTensor(num_classes, num_features))
-        nn.init.xavier_uniform_(self.W)
+        self.weight = Parameter(torch.FloatTensor(num_classes, num_features))
+        nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, label=None):
         # normalize features
         x = F.normalize(input)
         # normalize weights
-        W = F.normalize(self.W)
+        W = F.normalize(self.weight)
         # dot product
         logits = F.linear(x, W)
         if label is None:
@@ -146,14 +146,14 @@ class SphereFace(nn.Module):
         self.num_classes = num_classes
         self.s = s
         self.m = m
-        self.W = Parameter(torch.FloatTensor(num_classes, num_features))
-        nn.init.xavier_uniform_(self.W)
+        self.weight = Parameter(torch.FloatTensor(num_classes, num_features))
+        nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, label=None):
         # normalize features
         x = F.normalize(input)
         # normalize weights
-        W = F.normalize(self.W)
+        W = F.normalize(self.weight)
         # dot product
         logits = F.linear(x, W)
         if label is None:
@@ -177,15 +177,15 @@ class CosFace(nn.Module):
         self.num_classes = num_classes
         self.s = s
         self.m = m
-        self.W = Parameter(torch.FloatTensor(num_classes, num_features))
-        nn.init.xavier_uniform_(self.W)
+        self.weight = Parameter(torch.FloatTensor(num_classes, num_features))
+        nn.init.xavier_uniform_(self.weight)
         # nn.init.normal_(self.W, std=0.001)
 
     def forward(self, input, label=None):
         # normalize features
         x = F.normalize(input)
         # normalize weights
-        W = F.normalize(self.W)
+        W = F.normalize(self.weight)
         # dot product
         logits = F.linear(x, W)
         if label is None:

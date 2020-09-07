@@ -23,7 +23,7 @@ class NAICReID(ImageDataset):
         global _NAIC_TESTING
         _NAIC_TESTING = kwargs.get('use_testing') or _NAIC_TESTING
 
-        self.naic_root = osp.join(root, 'naic')
+        self.naic_root, self.img_root, self.label_dir, self.splitor = self.get_datainfo(root)
         required_files = [
             self.naic_root
         ]
@@ -50,21 +50,28 @@ class NAICReID(ImageDataset):
         for identity in data:
             new_data.append(
                 (
-                    osp.join(self.naic_root,'train','images', identity[0]),
+                    osp.join(self.img_root, identity[0]),
                     f'naic_{identity[1]}' if is_train else int(identity[1]),
                     int(identity[2])
                 )
             )
         return new_data
 
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic')
+        img_root = osp.join(root, 'naic', 'train', 'images')
+        label_dir = osp.join(root, 'naic', 'train', 'label.txt')
+        spiltor = ':'
+        return naic_root, img_root, label_dir, spiltor
+
     def preprocess(self, naic_root):
 
-        label_dir = osp.join(naic_root, 'train', 'label.txt')
         np.random.seed(_NAIC_RANDOM_SEED)
         data = defaultdict(list)
-        with open(label_dir, 'r') as f:
+        with open(self.label_dir, 'r') as f:
             for line in f.readlines():
-                img_name, pid = line.strip().split(':')
+                img_name, pid = line.strip().split(self.splitor)
+                img_name = osp.split(img_name)[-1]
                 #                image_dir,   pid   ,    camid
                 data[pid].append([img_name, int(pid), len(data[pid]) + 1])
         pids = sorted(list(data.keys()))
@@ -98,6 +105,26 @@ class NAICReID(ImageDataset):
 
 
 @DATASET_REGISTRY.register()
+class NAIC19_PRE(NAICReID):
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic19_pre')
+        img_root = osp.join(naic_root, 'train_set')
+        label_dir = osp.join(naic_root, 'train_list.txt')
+        spiltor = ' '
+        return naic_root, img_root, label_dir, spiltor
+
+
+@DATASET_REGISTRY.register()
+class NAIC19_REP(NAICReID):
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic19_rep')
+        img_root = osp.join(naic_root, 'train_set')
+        label_dir = osp.join(naic_root, 'train_list (1).txt')
+        spiltor = ' '
+        return naic_root, img_root, label_dir, spiltor
+
+
+@DATASET_REGISTRY.register()
 class NAICSubmit(ImageDataset):
     def __init__(self, root='datasets', **kwargs):
         self.naic_root = osp.join(root, 'naic')
@@ -105,7 +132,7 @@ class NAICSubmit(ImageDataset):
             self.naic_root
         ]
         self.check_before_run(required_files)
-        imgs_root = osp.join(self.naic_root,'image_A')
+        imgs_root = osp.join(self.naic_root, 'image_A')
         train = []
         query = [(osp.join(imgs_root,'query',img_name),1,1) for img_name
                  in sorted(os.listdir(osp.join(imgs_root,'query')))]

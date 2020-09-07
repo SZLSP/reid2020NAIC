@@ -1,0 +1,51 @@
+_BASE_: "../Base-Strongerbaseline.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  CJ:
+    BRIGHTNESS: 0.15
+    CONTRAST: 0.15
+    ENABLED: True
+    HUE: 0.1
+    PROB: 0.8
+    SATURATION: 0.1
+  CT:
+    COLOR_OFFSET: [0, 0, 0]
+    ENABLED: True
+    INVERT: True
+  DO_AUGMIX: True
+  DO_AUTOAUG: True
+  DO_FLIP: True
+  DO_GRAYSCALE: False
+  DO_PAD: True
+  FLIP_PROB: 0.5
+  PADDING: 10
+  PADDING_MODE: constant
+  REA:
+    ENABLED: True
+    MEAN: [123.675, 116.28, 103.53]
+    PROB: 0.5
+  RPT:
+    ENABLED: True
+    PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+
+OUTPUT_DIR: "logs/HIT/bagtricks_R101-ibn-data"
+
+TEST:
+  AQE:
+    ALPHA: 3.0
+    ENABLED: False
+    QE_K: 5
+    QE_TIME: 1
+  EVAL_PERIOD: 10
+  IMS_PER_BATCH: 256

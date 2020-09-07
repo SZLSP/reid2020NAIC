@@ -268,9 +268,22 @@ class PeriodicCheckpointer:
         self.max_iter = max_iter
         self.best_score = self.checkpointer.checkpointables.get('best_score') or 0
 
-    def get_naic_score(self,latest_scalars):
-        rank1 = latest_scalars.get('Rank-1') or 0
-        map200 = latest_scalars.get('mAP@200') or 0
+    def get_naic_score(self, latest_scalars):
+
+        values = list(latest_scalars.values())
+        if isinstance(values[0], dict):
+            rank1 = 0
+            map200 = 0
+            n = 0
+            for v in values:
+                rank1 += v.get('Rank-1') or 0
+                map200 += v.get('mAP@200') or 0
+                n += 1
+            rank1 /= n
+            map200 /= n
+        else:
+            rank1 = latest_scalars.get('Rank-1') or 0
+            map200 = latest_scalars.get('mAP@200') or 0
         return rank1 * 0.5 + map200 * 0.5
 
     def step(self, iteration: int, **kwargs: Any):

@@ -33,50 +33,48 @@ class NAICSubmiter(DefaultPredictor):
         super(NAICSubmiter,self).__init__(cfg)
 
     def evaluation(self):
-        dataset_name = 'NAICReID'
         logger = logging.getLogger(__name__)
 
         results = OrderedDict()
 
-        logger.info("Prepare testing set")
-        data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name,use_testing=True)
-        # When evaluators are passed in as arguments,
-        # implicitly assume that evaluators can be created before data_loader.
+        for idx, dataset_name in enumerate(self.cfg.DATASETS.TESTS):
+            logger.info("Prepare testing set")
+            data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name, use_testing=True)
+            # When evaluators are passed in as arguments,
+            # implicitly assume that evaluators can be created before data_loader.
 
-        evaluator = ReidEvaluator(self.cfg, num_query)
+            evaluator = ReidEvaluator(self.cfg, num_query)
 
-        results[dataset_name] = {}
-        results_i = inference_on_dataset(self.model, data_loader, evaluator)
-        results[dataset_name] = results_i
+            results[dataset_name] = {}
 
-        results_path = osp.join(self.cfg.OUTPUT_DIR,'results.csv')
-        score = 0.5*(results[dataset_name]['Rank-1']+results[dataset_name]['mAP@200'])
-        results[dataset_name]['NAIC']=score
-        outputs = [dataset_name,score]+list(results[dataset_name].values()) + [self.cfg.TEST.AQE.ENABLED,
-                                            self.cfg.TEST.METRIC,
-                                            self.cfg.TEST.RERANK.ENABLED]
-        outputs = ','.join(list(map(str, outputs)))
-        if not osp.exists(results_path):
-            column = ['Datasets','NAIC']+list(results[dataset_name].keys())+['AQE','METRIC','RERANK']
-            column = ','.join(list(map(str,column)))
-            with open(results_path,'a') as f:
-                f.write(column+'\n'+outputs)
-        else:
-            with open(results_path,'a') as f:
-                f.write(outputs+'\n')
+            results_i = inference_on_dataset(self.model, data_loader, evaluator)
+            results[dataset_name] = results_i
 
+            results_path = osp.join(self.cfg.OUTPUT_DIR, 'results.csv')
+            score = 0.5 * (results[dataset_name]['Rank-1'] + results[dataset_name]['mAP@200'])
+            results[dataset_name]['NAIC'] = score
+            outputs = [dataset_name, score] + list(results[dataset_name].values()) + [self.cfg.TEST.AQE.ENABLED,
+                                                                                      self.cfg.TEST.METRIC,
+                                                                                      self.cfg.TEST.RERANK.ENABLED]
+            outputs = ','.join(list(map(str, outputs)))
+            if not osp.exists(results_path):
+                column = ['Datasets', 'NAIC'] + list(results[dataset_name].keys()) + ['AQE', 'METRIC', 'RERANK']
+                column = ','.join(list(map(str, column)))
+                with open(results_path, 'a') as f:
+                    f.write(column + '\n' + outputs + '\n')
+            else:
+                with open(results_path, 'a') as f:
+                    f.write(outputs + '\n')
 
-        if comm.is_main_process():
-            assert isinstance(
-                results, dict
-            ), "Evaluator must return a dict on the main process. Got {} instead.".format(
-                results
-            )
-            print_csv_format(results)
+            if comm.is_main_process():
+                assert isinstance(
+                    results, dict
+                ), "Evaluator must return a dict on the main process. Got {} instead.".format(
+                    results
+                )
+                print_csv_format(results)
 
-            if len(results) == 1: results = list(results.values())[0]
-
-            return results
+        return results
 
     def submit(self,use_dist=False,save_path=None,postfix=''):
         dataset_name = 'NAICSubmit'
@@ -187,9 +185,18 @@ def setup(args):
     return cfg
 
 
+def get_score(results):
+    score = 0
+    n = 0
+    for res in results.values():
+        score += 0.5 * (res['Rank-1'] + res['mAP@200'])
+        n += 1
+    return score / n
+
+
 def main(args):
     cfg = setup(args)
-    if len(cfg.MODEL.WEIGHTS)==0:
+    if len(cfg.MODEL.WEIGHTS) == 0:
         cfg.defrost()
         cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
         cfg.freeze()
@@ -206,7 +213,7 @@ def main(args):
                     submiter.cfg.TEST.RERANK.ENABLED = rerank
                     submiter.cfg.freeze()
                     res = submiter.evaluation()
-                    score = 0.5*(res['Rank-1']+res['mAP@200'])
+                    score = get_score(res)
                     if score>best_test_score:
                         best_test_score = score
                         best_hyperparameter = [aqe,metric,rerank]
@@ -219,7 +226,7 @@ def main(args):
         submiter.submit(postfix=postfix)
     else:
         res = submiter.evaluation()
-        postfix = 0.5*(res['Rank-1']+res['mAP@200'])
+        postfix = get_score(res)
         postfix = f'{postfix:.4f}'[2:]
         submiter.submit(postfix=postfix)
 

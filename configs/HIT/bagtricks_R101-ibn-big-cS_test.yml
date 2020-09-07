@@ -1,0 +1,36 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+
+  HEADS:
+    CLS_LAYER: circleSoftmax
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAICReID",)
+
+INPUT:
+  SIZE_TEST: [384,192]
+  SIZE_TRAIN: [384,192]
+
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: True
+
+OUTPUT_DIR: "logs/HIT/bagtricks_R101-ibn-big-cS"
+
+TEST:
+  AQE:
+    ENABLED: True
+  EVAL_PERIOD: 10
+  METRIC: euclidean
+  METRIC_METHOD: naic
+  IMS_PER_BATCH: 256
+  RERANK:
+    ENABLED: True

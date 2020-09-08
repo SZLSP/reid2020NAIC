@@ -70,6 +70,7 @@ def default_argument_parser():
     # even though set the MODEL.DEVICE='cuda:1', there will be a little model parameters cached in gpu 0
     # so use the python xxx.py --gpu-id 1 to make sure there won't be any parameters cached in unexpected gpu
     parser.add_argument("--gpu-id", type=str, default=0, help='id of to be used gpu')
+    parser.add_argument("--test-sets", type=str, default='', help='test datasets')
     parser.add_argument("--test-permutation", action='store_true',
                         help='test with the permutation of all reasonable combination of AQE,METRIC and RERANK')
     return parser
@@ -145,7 +146,8 @@ class DefaultPredictor:
         self.model = build_model(self.cfg)
         self.model.eval()
 
-        Checkpointer(self.model).load(cfg.MODEL.WEIGHTS)
+        cp = Checkpointer(self.model).load(cfg.MODEL.WEIGHTS)
+        self.iteration = cp['iteration']
 
     def __call__(self, image):
         """

@@ -66,5 +66,9 @@ TEST:
   EVAL_PERIOD: 5
   IMS_PER_BATCH: 128
 
+  RERANK:
+    K1: 20
+    K2: 2
+
 CUDNN_BENCHMARK: True
 

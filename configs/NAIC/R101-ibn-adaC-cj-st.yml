@@ -20,6 +20,6 @@ INPUT:
 
 DATASETS:
   NAMES: ("NAICReID",)
-  TESTS: ("NAICReID",)
+  TESTS: ("NAIC19Test",)
 
 OUTPUT_DIR: "logs/NAIC/R101-ibn-adaC-cj-st"

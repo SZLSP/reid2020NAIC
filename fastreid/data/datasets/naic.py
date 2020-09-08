@@ -146,6 +146,90 @@ class NAICSubmit(ImageDataset):
         super(NAICSubmit, self).__init__(train, query, gallery, **kwargs)
 
 
+@DATASET_REGISTRY.register()
+class NAIC19Test(ImageDataset):
 
-if __name__ == '__main__':
-    edge_detection('/home/dgy/project/pytorch/fast-reid/datasets/naic')
+    def __init__(self, root='datasets', **kwargs):
+        global _NAIC_TESTING
+        _NAIC_TESTING = kwargs.get('use_testing') or _NAIC_TESTING
+
+        self.naic_root, self.img_root, self.label_dir, self.splitor, self.train_prefix = self.get_datainfo(root)
+        required_files = [
+            self.naic_root
+        ]
+        self.check_before_run(required_files)
+
+        naic_json = osp.join(self.naic_root, 'naic19test.json')
+        if not osp.exists(naic_json):
+            self.preprocess(self.naic_root)
+
+        with open(naic_json, 'r') as f:
+            naic = json.load(f)
+        train = naic['train']
+        query = naic['val_query'] if not _NAIC_TESTING else naic['test_query']
+        gallery = naic['val_gallery'] if not _NAIC_TESTING else naic['test_gallery']
+
+        train = self.process_data(train, True)
+        query = self.process_data(query)
+        gallery = self.process_data(gallery)
+
+        super(NAIC19Test, self).__init__(train, query, gallery, **kwargs)
+
+    def process_data(self, data, is_train=False):
+        new_data = []
+        for identity in data:
+            new_data.append(
+                (
+                    osp.join(self.img_root, identity[0]),
+                    f'{self.train_prefix}_{identity[1]}' if is_train else int(identity[1]),
+                    int(identity[2])
+                )
+            )
+        return new_data
+
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic19_rep')
+        img_root = osp.join(naic_root, 'train_set')
+        label_dir = osp.join(naic_root, 'train_list (1).txt')
+        spiltor = ' '
+        train_prefix = 'naic19rep'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
+
+    def preprocess(self, naic_root):
+
+        np.random.seed(_NAIC_RANDOM_SEED)
+        data = defaultdict(list)
+        with open(self.label_dir, 'r') as f:
+            for line in f.readlines():
+                img_name, pid = line.strip().split(self.splitor)
+                img_name = osp.split(img_name)[-1]
+                #                image_dir,   pid   ,    camid
+                data[pid].append([img_name, int(pid), len(data[pid]) + 1])
+        pids = sorted(list(filter(lambda k: len(data[k]) >= 2, data.keys())))
+        np.random.shuffle(pids)
+        total_id = len(pids) - 2900
+        assert 0 < _NAIC_TRAIN_RATIO < _NAIC_VAL_RATIO <= 1
+        s1 = int(total_id * _NAIC_TRAIN_RATIO)
+        train = pids[:s1]
+        val = pids[s1:total_id]
+        test = pids[total_id:]
+
+        naic_json = defaultdict(list)
+        for key in train:
+            if len(data[key]) >= _NAIC_MIN_INSTANCE:
+                naic_json['train'].extend(data[key])
+
+        def split_query_gallery(keys):
+            query = []
+            gallery = []
+            for key in keys:
+                identity = data[key]
+                query_idx = np.random.randint(0, len(identity))
+                query.append((identity.pop(query_idx)))
+                gallery.extend(identity)
+            return query, gallery
+
+        naic_json['val_query'], naic_json['val_gallery'] = split_query_gallery(val)
+        naic_json['test_query'], naic_json['test_gallery'] = split_query_gallery(test)
+        with open(osp.join(naic_root, 'naic19test.json'), 'w') as f:
+            json.dump(naic_json, f)

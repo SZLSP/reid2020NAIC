@@ -23,7 +23,7 @@ class NAICReID(ImageDataset):
         global _NAIC_TESTING
         _NAIC_TESTING = kwargs.get('use_testing') or _NAIC_TESTING
 
-        self.naic_root, self.img_root, self.label_dir, self.splitor = self.get_datainfo(root)
+        self.naic_root, self.img_root, self.label_dir, self.splitor, self.train_prefix = self.get_datainfo(root)
         required_files = [
             self.naic_root
         ]
@@ -51,7 +51,7 @@ class NAICReID(ImageDataset):
             new_data.append(
                 (
                     osp.join(self.img_root, identity[0]),
-                    f'naic_{identity[1]}' if is_train else int(identity[1]),
+                    f'{self.train_prefix}_{identity[1]}' if is_train else int(identity[1]),
                     int(identity[2])
                 )
             )
@@ -62,7 +62,8 @@ class NAICReID(ImageDataset):
         img_root = osp.join(root, 'naic', 'train', 'images')
         label_dir = osp.join(root, 'naic', 'train', 'label.txt')
         spiltor = ':'
-        return naic_root, img_root, label_dir, spiltor
+        train_prefix = 'naic'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
 
     def preprocess(self, naic_root):
 
@@ -111,7 +112,8 @@ class NAIC19_PRE(NAICReID):
         img_root = osp.join(naic_root, 'train_set')
         label_dir = osp.join(naic_root, 'train_list.txt')
         spiltor = ' '
-        return naic_root, img_root, label_dir, spiltor
+        train_prefix = 'naic19pre'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
 
 
 @DATASET_REGISTRY.register()
@@ -121,7 +123,8 @@ class NAIC19_REP(NAICReID):
         img_root = osp.join(naic_root, 'train_set')
         label_dir = osp.join(naic_root, 'train_list (1).txt')
         spiltor = ' '
-        return naic_root, img_root, label_dir, spiltor
+        train_prefix = 'naic19rep'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
 
 
 @DATASET_REGISTRY.register()

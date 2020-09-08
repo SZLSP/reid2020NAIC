@@ -13,7 +13,7 @@ class AdaCos(nn.Module):
         super(AdaCos, self).__init__()
         self.num_features = num_features
         self.num_classes = num_classes
-        self.s = math.sqrt(2) * math.log(num_classes - 1)
+        self.s = (math.sqrt(2) * math.log(num_classes - 1)) if num_classes > 1 else 1
         self.m = m
         self.weight = Parameter(torch.FloatTensor(num_classes, num_features))
         nn.init.xavier_uniform_(self.weight)

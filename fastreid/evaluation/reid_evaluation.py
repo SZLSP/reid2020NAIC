@@ -33,6 +33,23 @@ class ReidEvaluator(DatasetEvaluator):
         self.pids = []
         self.camids = []
 
+        self.catched_features = None
+        self.catched_pids = None
+        self.catched_camids = None
+
+    def cached(self):
+        self.catched_features = copy.deepcopy(self.features)
+        self.catched_camids = copy.deepcopy(self.camids)
+        self.catched_pids = copy.deepcopy(self.pids)
+
+    def recover(self):
+        if self.catched_pids is None or self.catched_features is None or self.catched_camids is None:
+            return None
+        self.features = copy.deepcopy(self.catched_features)
+        self.camids = copy.deepcopy(self.catched_camids)
+        self.pids = copy.deepcopy(self.catched_pids)
+        return self
+
     def reset(self):
         self.features = []
         self.pids = []

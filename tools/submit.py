@@ -13,7 +13,7 @@ from fastreid.utils import comm
 from collections import OrderedDict
 from fastreid.data import build_reid_test_loader
 from fastreid.evaluation import (ReidEvaluator,
-                                 inference_on_dataset, print_csv_format)
+                                 print_csv_format, extract_feature)
 from fastreid.evaluation.query_expansion import aqe
 from fastreid.evaluation.rerank import re_ranking
 from fastreid.evaluation.fast_reranking import re_ranking as fast_re_ranking
@@ -31,6 +31,7 @@ from tqdm import tqdm
 class NAICSubmiter(DefaultPredictor):
     def __init__(self,cfg):
         super(NAICSubmiter,self).__init__(cfg)
+        self.cached_info = {}
 
     def evaluation(self):
         logger = logging.getLogger(__name__)
@@ -39,26 +40,40 @@ class NAICSubmiter(DefaultPredictor):
 
         for idx, dataset_name in enumerate(self.cfg.DATASETS.TESTS):
             logger.info("Prepare testing set")
-            data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name, use_testing=True)
-            # When evaluators are passed in as arguments,
-            # implicitly assume that evaluators can be created before data_loader.
+            cached_info = self.cached_info.get(dataset_name)
+            evaluator = None
+            if cached_info is not None:
+                data_loader, num_query, evaluator = cached_info
+                if evaluator._num_query != num_query:
+                    evaluator = None
+                else:
+                    evaluator = evaluator.recover()
+            if evaluator is None:
+                data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name, use_testing=True)
+                # When evaluators are passed in as arguments,
+                # implicitly assume that evaluators can be created before data_loader.
 
-            evaluator = ReidEvaluator(self.cfg, num_query)
+                evaluator = ReidEvaluator(self.cfg, num_query)
+                self.cached_info[dataset_name] = (data_loader, num_query, evaluator)
+                extract_feature(self.model, data_loader, evaluator)
+                evaluator.cached()
 
+            results_i = evaluator.evaluate()
             results[dataset_name] = {}
-
-            results_i = inference_on_dataset(self.model, data_loader, evaluator)
             results[dataset_name] = results_i
 
             results_path = osp.join(self.cfg.OUTPUT_DIR, 'results.csv')
             score = 0.5 * (results[dataset_name]['Rank-1'] + results[dataset_name]['mAP@200'])
             results[dataset_name]['NAIC'] = score
-            outputs = [dataset_name, score] + list(results[dataset_name].values()) + [self.cfg.TEST.AQE.ENABLED,
-                                                                                      self.cfg.TEST.METRIC,
-                                                                                      self.cfg.TEST.RERANK.ENABLED]
+            results[dataset_name]['AQE'] = self.cfg.TEST.AQE.ENABLED
+            results[dataset_name]['METRIC'] = self.cfg.TEST.METRIC
+            results[dataset_name]['RERANK'] = self.cfg.TEST.RERANK.ENABLED
+            results[dataset_name]['ITERATION'] = self.iteration
+            outputs = [dataset_name, score] + list(results[dataset_name].values())
             outputs = ','.join(list(map(str, outputs)))
             if not osp.exists(results_path):
-                column = ['Datasets', 'NAIC'] + list(results[dataset_name].keys()) + ['AQE', 'METRIC', 'RERANK']
+                column = ['Datasets', 'NAIC'] + list(results[dataset_name].keys()) + ['AQE', 'METRIC', 'RERANK',
+                                                                                      'ITERATION']
                 column = ','.join(list(map(str, column)))
                 with open(results_path, 'a') as f:
                     f.write(column + '\n' + outputs + '\n')
@@ -66,13 +81,13 @@ class NAICSubmiter(DefaultPredictor):
                 with open(results_path, 'a') as f:
                     f.write(outputs + '\n')
 
-            if comm.is_main_process():
-                assert isinstance(
-                    results, dict
-                ), "Evaluator must return a dict on the main process. Got {} instead.".format(
-                    results
-                )
-                print_csv_format(results)
+        if comm.is_main_process():
+            assert isinstance(
+                results, dict
+            ), "Evaluator must return a dict on the main process. Got {} instead.".format(
+                results
+            )
+            print_csv_format(results)
 
         return results
 
@@ -200,11 +215,15 @@ def main(args):
         cfg.defrost()
         cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
         cfg.freeze()
+    if len(args.test_sets) > 0:
+        cfg.defrost()
+        cfg.DATASETS.TESTS = tuple(args.test_sets.split(','))
+        cfg.freeze()
     submiter = NAICSubmiter(cfg)
     if args.test_permutation:
         best_test_score = 0
         best_hyperparameter = None
-        for aqe in [False,True]:
+        for aqe in [False, True]:
             for metric in ['cosine', 'euclidean']:
                 rerank = True
                 submiter.cfg.defrost()

@@ -37,3 +37,10 @@ python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn0.yml
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn3.yml --gpu-id 2 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-efn5.yml --gpu-id 5 --test-permutation
 
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-adaC-cj-st.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcC-cj-st.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st.yml --gpu-id 3 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cosF-cj-st.yml --gpu-id 4 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-cS-cj-st-gem.yml --gpu-id 5 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-sphF-cj-st.yml --gpu-id 6 --test-permutation
+

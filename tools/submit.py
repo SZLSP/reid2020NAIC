@@ -205,18 +205,18 @@ def main(args):
         best_test_score = 0
         best_hyperparameter = None
         for aqe in [False,True]:
-            for metric in ['cosine','euclidean']:
-                for rerank in [False,True]:
-                    submiter.cfg.defrost()
-                    submiter.cfg.TEST.AQE.ENABLED = aqe
-                    submiter.cfg.TEST.METRIC = metric
-                    submiter.cfg.TEST.RERANK.ENABLED = rerank
-                    submiter.cfg.freeze()
-                    res = submiter.evaluation()
-                    score = get_score(res)
-                    if score>best_test_score:
-                        best_test_score = score
-                        best_hyperparameter = [aqe,metric,rerank]
+            for metric in ['cosine', 'euclidean']:
+                rerank = True
+                submiter.cfg.defrost()
+                submiter.cfg.TEST.AQE.ENABLED = aqe
+                submiter.cfg.TEST.METRIC = metric
+                submiter.cfg.TEST.RERANK.ENABLED = rerank
+                submiter.cfg.freeze()
+                res = submiter.evaluation()
+                score = get_score(res)
+                if score > best_test_score:
+                    best_test_score = score
+                    best_hyperparameter = [aqe, metric, rerank]
         submiter.cfg.defrost()
         submiter.cfg.TEST.AQE.ENABLED = best_hyperparameter[0]
         submiter.cfg.TEST.METRIC = best_hyperparameter[1]

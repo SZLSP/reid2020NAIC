@@ -271,6 +271,8 @@ class PeriodicCheckpointer:
     def get_naic_score(self, latest_scalars):
 
         values = list(latest_scalars.values())
+        if len(values) == 0:
+            return 0
         if isinstance(values[0], dict):
             rank1 = 0
             map200 = 0

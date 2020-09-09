@@ -29,8 +29,8 @@ from tqdm import tqdm
 
 
 class NAICSubmiter(DefaultPredictor):
-    def __init__(self,cfg):
-        super(NAICSubmiter,self).__init__(cfg)
+    def __init__(self, cfg):
+        super(NAICSubmiter, self).__init__(cfg)
         self.cached_info = {}
 
     def evaluation(self):
@@ -91,10 +91,9 @@ class NAICSubmiter(DefaultPredictor):
 
         return results
 
-    def submit(self,use_dist=False,save_path=None,postfix=''):
+    def submit(self, use_dist=False, save_path=None, postfix=''):
         dataset_name = 'NAICSubmit'
         logger = logging.getLogger(__name__)
-
 
         logger.info("Prepare testing set")
         data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name)
@@ -103,8 +102,8 @@ class NAICSubmiter(DefaultPredictor):
         img_paths = []
         features = []
 
-        with inference_context(self.model),torch.no_grad():
-            for idx, inputs in tqdm(enumerate(data_loader),total=len(data_loader)):
+        with inference_context(self.model), torch.no_grad():
+            for idx, inputs in tqdm(enumerate(data_loader), total=len(data_loader)):
                 outputs = self.model(inputs)
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
@@ -120,7 +119,7 @@ class NAICSubmiter(DefaultPredictor):
         gallery_features = features[num_query:]
 
         if self.cfg.TEST.AQE.ENABLED:
-            postfix+='_aqe'
+            postfix += '_aqe'
             logger.info("Test with AQE setting")
             qe_time = self.cfg.TEST.AQE.QE_TIME
             qe_k = self.cfg.TEST.AQE.QE_K
@@ -128,11 +127,11 @@ class NAICSubmiter(DefaultPredictor):
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
 
         if self.cfg.TEST.METRIC == "cosine":
-            postfix+='_cos'
+            postfix += '_cos'
             query_features = F.normalize(query_features, dim=1)
             gallery_features = F.normalize(gallery_features, dim=1)
         else:
-            postfix+='_l2'
+            postfix += '_l2'
 
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
 
@@ -154,7 +153,6 @@ class NAICSubmiter(DefaultPredictor):
         query_features = query_features.numpy()
         gallery_features = gallery_features.numpy()
 
-
         if use_dist:
             indices = np.argsort(dist, axis=1)
         else:
@@ -165,13 +163,13 @@ class NAICSubmiter(DefaultPredictor):
 
         gallery_paths = np.asarray(gallery_paths)
         submit = OrderedDict()
-        for i,key in enumerate(query_paths):
-            submit[key] = gallery_paths[indices[i,:200]].tolist()
+        for i, key in enumerate(query_paths):
+            submit[key] = gallery_paths[indices[i, :200]].tolist()
 
         if save_path is None: save_path = self.cfg.OUTPUT_DIR
-        with open(osp.join(save_path,f'submit{postfix}.json'),'w') as f:
-            json.dump(submit,f)
-
+        cfg_name = osp.split(args.config_file)[-1][:-4]
+        with open(osp.join(save_path, f'{cfg_name}_it{self.iteration}_{postfix}.json'), 'w') as f:
+            json.dump(submit, f)
 
     @staticmethod
     def cal_dist(metric: str, query_feat: torch.tensor, gallery_feat: torch.tensor):
@@ -215,6 +213,7 @@ def main(args):
         cfg.defrost()
         cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
         cfg.freeze()
+
     if len(args.test_sets) > 0:
         cfg.defrost()
         cfg.DATASETS.TESTS = tuple(args.test_sets.split(','))
@@ -252,6 +251,7 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
+
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
     print("Command Line Args:", args)
     launch(

@@ -32,6 +32,8 @@ def normalize(x, axis=-1):
 
 
 def euclidean_dist(x, y):
+    x = x.float()
+    y = y.float()
     m, n = x.size(0), y.size(0)
     xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
     yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()

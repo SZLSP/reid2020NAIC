@@ -193,7 +193,7 @@ _C.DATALOADER.NUM_WORKERS = 8
 # Solver
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-
+_C.SOLVER.AMP = True
 _C.SOLVER.OPT = "Adam"
 
 _C.SOLVER.MAX_ITER = 120

@@ -16,6 +16,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
+from torch.cuda.amp import GradScaler
 from torch.nn.parallel import DistributedDataParallel
 
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
@@ -224,6 +225,9 @@ class DefaultTrainer(SimpleTrainer):
         super().__init__(model, data_loader, optimizer)
 
         self.scheduler = self.build_lr_scheduler(cfg, optimizer)
+        self.scalar = GradScaler()
+        self.use_amp = cfg.SOLVER.AMP
+
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks
         self.checkpointer = Checkpointer(
@@ -233,6 +237,7 @@ class DefaultTrainer(SimpleTrainer):
             save_to_disk=comm.is_main_process(),
             optimizer=optimizer,
             scheduler=self.scheduler,
+            scalar=self.scalar
         )
         self.start_iter = 0
         if cfg.SOLVER.SWA.ENABLED:

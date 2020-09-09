@@ -207,12 +207,11 @@ class NAIC19Test(ImageDataset):
                 data[pid].append([img_name, int(pid), len(data[pid]) + 1])
         pids = sorted(list(filter(lambda k: len(data[k]) >= 2, data.keys())))
         np.random.shuffle(pids)
-        total_id = len(pids) - 2900
-        assert 0 < _NAIC_TRAIN_RATIO < _NAIC_VAL_RATIO <= 1
-        s1 = int(total_id * _NAIC_TRAIN_RATIO)
+        total_id = len(pids)
+        s1, s2 = total_id - 2900 * 2, total_id - 2900
         train = pids[:s1]
-        val = pids[s1:total_id]
-        test = pids[total_id:]
+        val = pids[s1:s2]
+        test = pids[s2:]
 
         naic_json = defaultdict(list)
         for key in train:
@@ -231,5 +230,6 @@ class NAIC19Test(ImageDataset):
 
         naic_json['val_query'], naic_json['val_gallery'] = split_query_gallery(val)
         naic_json['test_query'], naic_json['test_gallery'] = split_query_gallery(test)
+
         with open(osp.join(naic_root, 'naic19test.json'), 'w') as f:
             json.dump(naic_json, f)

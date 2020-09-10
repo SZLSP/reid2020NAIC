@@ -15,6 +15,9 @@ from .cosine_loss import ArcFace, ArcCos, AdaCos, CosFace, SphereFace
 from .frn import FRN, TLU
 from .non_local import Non_local
 from .pooling import *
-from .rfconv import RFConv2d
+# try:
+#     from .rfconv import RFConv2d
+# except:
+#     warnings.warn('RFConv2d import failed')
 from .se_layer import SELayer
 from .splat import SplAtConv2d

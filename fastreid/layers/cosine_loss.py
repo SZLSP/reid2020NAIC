@@ -60,7 +60,7 @@ class ArcFace(nn.Module):
         # normalize weights
         W = F.normalize(self.weight)
         # dot product
-        logits = F.linear(x, W)
+        logits = F.linear(x, W)  # ->cos(theta)
         if label is None:
             return logits
         # add margin

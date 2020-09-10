@@ -1,0 +1,28 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+    NAME: build_resnest_backbone
+
+  HEADS:
+    CLS_LAYER: arcFace
+    POOL_LAYER: avgpool
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: True
+
+DATASETS:
+  NAMES: ("NAICReID",)
+  TESTS: ("NAIC19Test",)
+
+SOLVER:
+  AMP: True
+
+OUTPUT_DIR: "logs/NAIC/R101-ibn-arcF-cj-st-amp"

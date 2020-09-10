@@ -89,10 +89,16 @@ class Baseline(nn.Module):
         if "CrossEntropyLoss" in loss_names:
             loss_dict['loss_cls'] = CrossEntropyLoss(self._cfg)(cls_outputs, gt_labels)
 
+        if "FocalLoss" in loss_names:
+            loss_dict['loss_focal'] = FocalLoss(self._cfg)(cls_outputs, gt_labels)
+
         if "TripletLoss" in loss_names:
             loss_dict['loss_triplet'] = TripletLoss(self._cfg)(pred_features, gt_labels)
 
         if "CircleLoss" in loss_names:
             loss_dict['loss_circle'] = CircleLoss(self._cfg)(pred_features, gt_labels)
+
+        if "SmoothAp" in loss_names:
+            loss_dict['loss_smooth'] = SmoothAP(self._cfg)(pred_features, gt_labels)
 
         return loss_dict

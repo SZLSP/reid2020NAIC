@@ -9,8 +9,8 @@ from fastreid.data.datasets import DATASET_REGISTRY
 import numpy as np
 import json
 
-_NAIC_TRAIN_RATIO = 0.8
-_NAIC_VAL_RATIO = 0.9
+_NAIC_TRAIN_RATIO = 1.0
+_NAIC_VAL_RATIO = 1.0
 _NAIC_RANDOM_SEED = 2020
 _NAIC_TESTING = False
 _NAIC_MIN_INSTANCE = 1
@@ -78,7 +78,7 @@ class NAICReID(ImageDataset):
         pids = sorted(list(data.keys()))
         np.random.shuffle(pids)
         total_id = len(pids)
-        assert 0<_NAIC_TRAIN_RATIO<_NAIC_VAL_RATIO<=1
+        assert 0 < _NAIC_TRAIN_RATIO <= _NAIC_VAL_RATIO <= 1
         s1, s2 = int(total_id * _NAIC_TRAIN_RATIO), int(total_id * _NAIC_VAL_RATIO)
         train = pids[:s1]
         val = pids[s1:s2]

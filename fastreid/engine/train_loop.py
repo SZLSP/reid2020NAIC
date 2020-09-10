@@ -10,7 +10,11 @@ import weakref
 
 import numpy as np
 import torch
-from torch.cuda.amp import autocast
+
+try:
+    from torch.cuda.amp import autocast
+except:
+    pass
 from torch.nn.parallel import DistributedDataParallel
 
 import fastreid.utils.comm as comm

@@ -5,7 +5,7 @@ import collections
 import copy
 import logging
 import os
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import Any
 
 import numpy as np
@@ -32,7 +32,7 @@ class Checkpointer(object):
             **checkpointables: object,
     ):
         """
-        Args:
+        Args :
             model (nn.Module): model.
             save_dir (str): a directory to save and find checkpoints.
             save_to_disk (bool): if True, save checkpoint to disk, otherwise
@@ -73,6 +73,34 @@ class Checkpointer(object):
         with PathManager.open(save_file, "wb") as f:
             torch.save(data, f)
         self.tag_last_checkpoint(basename)
+
+    def load_mixed_model(self, path, iterations: list):
+        if len(iterations) == 0:
+            iterations = ['best']
+        iterations = [f'{it:07d}' if isinstance(it, int) else it for it in iterations]
+        model_dirs = [os.path.join(path, f'model_{it}.pth') for it in iterations]
+
+        checkfiles = [self._load_file(p) for p in model_dirs]
+        checkpoints: [OrderedDict] = [cf['model'] for cf in checkfiles]
+        model_num = len(checkpoints)
+        new_checkpoint = OrderedDict()
+        for k in checkpoints[0].keys():
+            params = [cp[k] for cp in checkpoints]
+            if isinstance(params[0], np.ndarray):
+                placeholder = np.zeros_like(params[0])
+            elif isinstance(params[0], torch.Tensor):
+                placeholder = torch.zeros_like(params[0])
+
+            for param in params:
+                placeholder += param
+            try:
+                placeholder /= model_num
+            except RuntimeError as e:
+                placeholder //= model_num
+            new_checkpoint[k] = placeholder
+        self._load_model({"model": new_checkpoint})
+        iterations = [f"{cf['iteration']:07d}" for cf in checkfiles]
+        return {"iteration": '_'.join(iterations)}
 
     def load(self, path: str):
         """

@@ -103,8 +103,6 @@ class FocalLoss(object):
         self._gamma: float = cfg.MODEL.LOSSES.FL.GAMMA
         self._scale: float = cfg.MODEL.LOSSES.FL.SCALE
 
-    def __call__(self, pred_class_logits: torch.Tensor, _, gt_classes: torch.Tensor) -> dict:
+    def __call__(self, pred_class_logits: torch.Tensor, gt_classes: torch.Tensor) -> torch.Tensor:
         loss = focal_loss(pred_class_logits, gt_classes, self._alpha, self._gamma)
-        return {
-            'loss_focal': loss * self._scale,
-        }
+        return loss * self._scale

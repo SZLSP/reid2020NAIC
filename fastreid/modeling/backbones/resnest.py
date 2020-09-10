@@ -185,7 +185,7 @@ class ResNest(nn.Module):
         self.rectified_conv = rectified_conv
         self.rectify_avg = rectify_avg
         if rectified_conv:
-            from rfconv import RFConv2d
+            from fastreid.layers import RFConv2d
             conv_layer = RFConv2d
         else:
             conv_layer = nn.Conv2d
@@ -374,14 +374,16 @@ def build_resnest_backbone(cfg):
     with_nl = cfg.MODEL.BACKBONE.WITH_NL
     depth = cfg.MODEL.BACKBONE.DEPTH
 
+    rectified_conv = cfg.MODEL.BACKBONE.RECTIFIED_CONV
+
     num_blocks_per_stage = {"50x": [3, 4, 6, 3], "101x": [3, 4, 23, 3], "200x": [3, 24, 36, 3],
                             "269x": [3, 30, 48, 8]}[depth]
     nl_layers_per_stage = {"50x": [0, 2, 3, 0], "101x": [0, 2, 3, 0], "200x": [0, 2, 3, 0], "269x": [0, 2, 3, 0]}[depth]
     stem_width = {"50x": 32, "101x": 64, "200x": 64, "269x": 64}[depth]
     model = ResNest(last_stride, bn_norm, num_splits, with_ibn, with_nl, Bottleneck, num_blocks_per_stage,
                     nl_layers_per_stage, radix=2, groups=1, bottleneck_width=64,
-                    deep_stem=True, stem_width=stem_width, avg_down=True,
-                    avd=True, avd_first=False)
+                    deep_stem=True, stem_width=stem_width, avg_down=True, rectified_conv=rectified_conv,
+                    avd=True, avd_first=False, )
     if pretrain:
         # Load pretrain path if specifically
         if pretrain_path:

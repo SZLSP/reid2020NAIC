@@ -214,3 +214,14 @@ def re_ranking(probFea, galFea, k1, k2, lambda_value):
 
     print('Using totally {:.2f}S to compute final_distance'.format(time.time() - t1))
     return final_dist
+
+
+if __name__ == '__main__':
+    query_num = 2900
+    gallery_num = 36000
+    k1 = 20
+    k2 = 2
+
+    query = torch.rand((query_num, 2048))
+    gallery = torch.rand((gallery_num, 2048))
+    re_ranking(query, gallery, k1, k2, 0.3)

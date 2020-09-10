@@ -10,8 +10,8 @@
 import torch
 import torch.nn.functional as F
 
-from fastreid.utils import comm
 from fastreid.modeling.losses.utils import concat_all_gather
+from fastreid.utils import comm
 
 
 def sigmoid(tensor, temp=1.0):
@@ -72,7 +72,8 @@ class SmoothAP(object):
             the dimension of the input feature embeddings
         """
 
-        self.anneal = 0.01
+        self.anneal = cfg.MODEL.LOSSES.SA.ANNEAL
+        self.metric = cfg.MODEL.LOSSES.SA.METRIC
         self.num_id = cfg.SOLVER.IMS_PER_BATCH // cfg.DATALOADER.NUM_INSTANCE
         # self.num_id = 6
 
@@ -91,8 +92,10 @@ class SmoothAP(object):
         else:
             all_embedding = embedding
             all_targets = targets
-
-        sim_dist = torch.matmul(embedding, all_embedding.t())
+        if self.metric == 'sim':
+            sim_dist = torch.matmul(embedding, all_embedding.t())
+        else:
+            sim_dist = 1 - torch.matmul(embedding, all_embedding.t())
         N, M = sim_dist.size()
 
         # Compute the mask which ignores the relevance score of the query to itself

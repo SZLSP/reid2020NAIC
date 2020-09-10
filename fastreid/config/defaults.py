@@ -48,6 +48,9 @@ _C.MODEL.BACKBONE.PRETRAIN = True
 # Pretrain model path
 _C.MODEL.BACKBONE.PRETRAIN_PATH = ''
 
+# Resnetst config
+_C.MODEL.BACKBONE.RECTIFIED_CONV = False
+
 # ---------------------------------------------------------------------------- #
 # REID HEADS options
 # ---------------------------------------------------------------------------- #
@@ -109,13 +112,18 @@ _C.MODEL.LOSSES.FL.ALPHA = 0.25
 _C.MODEL.LOSSES.FL.GAMMA = 2
 _C.MODEL.LOSSES.FL.SCALE = 1.0
 
+# Smooth Ap options
+_C.MODEL.LOSSES.SA = CN()
+_C.MODEL.LOSSES.SA.ANNEAL = 0.01
+_C.MODEL.LOSSES.SA.METRIC = "sim"  # dist or sim
+
 # Path to a checkpoint file to be loaded to the model. You can find available models in the model zoo.
 _C.MODEL.WEIGHTS = ""
 
 # Values to be used for image normalization
-_C.MODEL.PIXEL_MEAN = [0.485*255, 0.456*255, 0.406*255]
+_C.MODEL.PIXEL_MEAN = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 # Values to be used for image normalization
-_C.MODEL.PIXEL_STD = [0.229*255, 0.224*255, 0.225*255]
+_C.MODEL.PIXEL_STD = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
 
 # -----------------------------------------------------------------------------
@@ -250,6 +258,7 @@ _C.TEST.IMS_PER_BATCH = 64
 _C.TEST.METRIC = "cosine"
 _C.TEST.METRIC_METHOD = 'naic'
 _C.TEST.ROC_ENABLED = False
+_C.TEST.ITERATIONS = []
 
 # Average query expansion
 _C.TEST.AQE = CN()

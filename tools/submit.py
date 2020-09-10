@@ -69,11 +69,12 @@ class NAICSubmiter(DefaultPredictor):
             results[dataset_name]['METRIC'] = self.cfg.TEST.METRIC
             results[dataset_name]['RERANK'] = self.cfg.TEST.RERANK.ENABLED
             results[dataset_name]['ITERATION'] = self.iteration
+            # results[dataset_name]['RERANK_K1'] = self.cfg.TEST.RERANK.K1
+            # results[dataset_name]['RERANK_K2'] = self.cfg.TEST.RERANK.K2
             outputs = [dataset_name, score] + list(results[dataset_name].values())
             outputs = ','.join(list(map(str, outputs)))
             if not osp.exists(results_path):
-                column = ['Datasets', 'NAIC'] + list(results[dataset_name].keys()) + ['AQE', 'METRIC', 'RERANK',
-                                                                                      'ITERATION']
+                column = ['Datasets', 'NAIC'] + list(results[dataset_name].keys())
                 column = ','.join(list(map(str, column)))
                 with open(results_path, 'a') as f:
                     f.write(column + '\n' + outputs + '\n')
@@ -209,9 +210,11 @@ def get_score(results):
 
 def main(args):
     cfg = setup(args)
-    if len(cfg.MODEL.WEIGHTS) == 0:
+    if len(args.test_iter) > 0:
         cfg.defrost()
-        cfg.MODEL.WEIGHTS = osp.join(cfg.OUTPUT_DIR, 'model_best.pth')
+        iterations = args.test_iter.split(',')
+        iterations = [int(it) if it.isdigit() else it for it in iterations]
+        cfg.TEST.ITERATIONS = iterations
         cfg.freeze()
 
     if len(args.test_sets) > 0:
@@ -223,18 +226,24 @@ def main(args):
         best_test_score = 0
         best_hyperparameter = None
         for aqe in [False, True]:
-            for metric in ['cosine', 'euclidean']:
-                rerank = True
-                submiter.cfg.defrost()
-                submiter.cfg.TEST.AQE.ENABLED = aqe
-                submiter.cfg.TEST.METRIC = metric
-                submiter.cfg.TEST.RERANK.ENABLED = rerank
-                submiter.cfg.freeze()
-                res = submiter.evaluation()
-                score = get_score(res)
-                if score > best_test_score:
-                    best_test_score = score
-                    best_hyperparameter = [aqe, metric, rerank]
+            # for metric in ['cosine', 'euclidean']:
+            # for k1 in range(8,41,4):
+            #     for k2 in range(2,9,1):
+            #         aqe = True
+            metric = 'cosine'
+            rerank = True
+            submiter.cfg.defrost()
+            submiter.cfg.TEST.AQE.ENABLED = aqe
+            submiter.cfg.TEST.METRIC = metric
+            submiter.cfg.TEST.RERANK.ENABLED = rerank
+            # submiter.cfg.TEST.RERANK.K1 = k1
+            # submiter.cfg.TEST.RERANK.K2 = k2
+            submiter.cfg.freeze()
+            res = submiter.evaluation()
+            score = get_score(res)
+            if score > best_test_score:
+                best_test_score = score
+                best_hyperparameter = [aqe, metric, rerank]
         submiter.cfg.defrost()
         submiter.cfg.TEST.AQE.ENABLED = best_hyperparameter[0]
         submiter.cfg.TEST.METRIC = best_hyperparameter[1]

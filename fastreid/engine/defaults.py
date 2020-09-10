@@ -16,7 +16,11 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.cuda.amp import GradScaler
+
+try:
+    from torch.cuda.amp import GradScaler
+except:
+    GradScaler = torch.nn.Identity  # To prevent checkpoint saving error
 from torch.nn.parallel import DistributedDataParallel
 
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
@@ -72,6 +76,7 @@ def default_argument_parser():
     # so use the python xxx.py --gpu-id 1 to make sure there won't be any parameters cached in unexpected gpu
     parser.add_argument("--gpu-id", type=str, default=0, help='id of to be used gpu')
     parser.add_argument("--test-sets", type=str, default='', help='test datasets')
+    parser.add_argument("--test-iter", type=str, default='', help='test iterations')
     parser.add_argument("--test-permutation", action='store_true',
                         help='test with the permutation of all reasonable combination of AQE,METRIC and RERANK')
     return parser
@@ -146,8 +151,8 @@ class DefaultPredictor:
         self.cfg.MODEL.BACKBONE.PRETRAIN = False
         self.model = build_model(self.cfg)
         self.model.eval()
-
-        cp = Checkpointer(self.model).load(cfg.MODEL.WEIGHTS)
+        iterations = cfg.TEST.ITERATIONS
+        cp = Checkpointer(self.model).load_mixed_model(cfg.OUTPUT_DIR, iterations)
         self.iteration = cp['iteration']
 
     def __call__(self, image):
@@ -226,7 +231,7 @@ class DefaultTrainer(SimpleTrainer):
 
         self.scheduler = self.build_lr_scheduler(cfg, optimizer)
         self.scalar = GradScaler()
-        self.use_amp = cfg.SOLVER.AMP
+        self.use_amp = cfg.SOLVER.AMP and not isinstance(self.scalar, torch.nn.Identity)
 
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks

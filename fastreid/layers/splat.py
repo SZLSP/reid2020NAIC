@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch import nn
 from torch.nn import Conv2d, ReLU
 from torch.nn.modules.utils import _pair
+
 from fastreid.layers import get_norm
 
 
@@ -26,7 +27,7 @@ class SplAtConv2d(nn.Module):
         self.channels = channels
         self.dropblock_prob = dropblock_prob
         if self.rectify:
-            from rfconv import RFConv2d
+            from fastreid.layers import RFConv2d
             self.conv = RFConv2d(in_channels, channels * radix, kernel_size, stride, padding, dilation,
                                  groups=groups * radix, bias=bias, average_mode=rectify_avg, **kwargs)
         else:

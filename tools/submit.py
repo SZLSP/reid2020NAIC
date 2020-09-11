@@ -49,7 +49,7 @@ class NAICSubmiter(DefaultPredictor):
                 else:
                     evaluator = evaluator.recover()
             if evaluator is None:
-                data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name, use_testing=True)
+                data_loader, num_query = build_reid_test_loader(self.cfg, dataset_name, use_testing=False)
                 # When evaluators are passed in as arguments,
                 # implicitly assume that evaluators can be created before data_loader.
 

@@ -5,11 +5,12 @@
 """
 
 import os
+
 import torch
 from torch._six import container_abcs, string_classes, int_classes
 from torch.utils.data import DataLoader
-from fastreid.utils import comm
 
+from fastreid.utils import comm
 from . import samplers
 from .common import CommDataset
 from .datasets import DATASET_REGISTRY
@@ -24,7 +25,15 @@ def build_reid_train_loader(cfg):
 
     train_items = list()
     for d in cfg.DATASETS.NAMES:
-        dataset = DATASET_REGISTRY.get(d)(root=_root, combineall=cfg.DATASETS.COMBINEALL)
+        data_info = [temp.strip() for temp in d.split(':')]
+        if len(data_info) == 2:
+            ratio = data_info[1]
+            assert len(ratio) == 4 and ratio.isnumeric(), 'required four figures, bug got {}'.format(ratio)
+            train_ratio, val_ratio = float(ratio[:2]), float(ratio[2:])
+            dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, combineall=cfg.DATASETS.COMBINEALL,
+                                                         train_ratio=train_ratio, val_ratio=val_ratio)
+        else:
+            dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, combineall=cfg.DATASETS.COMBINEALL)
         if comm.is_main_process():
             dataset.show_train()
         train_items.extend(dataset.train)
@@ -61,8 +70,18 @@ def build_reid_train_loader(cfg):
 def build_reid_test_loader(cfg, dataset_name, **kwargs):
     cfg = cfg.clone()
     cfg.defrost()
-    
-    dataset = DATASET_REGISTRY.get(dataset_name)(root=_root,**kwargs)
+
+    data_info = [temp.strip() for temp in dataset_name.split(':')]
+    if len(data_info) == 2:
+        ratio = data_info[1]
+        assert len(ratio) == 4 and ratio.isnumeric(), 'required four figures, bug got {}'.format(ratio)
+        train_ratio, val_ratio = float(ratio[:2]), float(ratio[2:])
+        dataset = DATASET_REGISTRY.get(data_info[0])(root=_root,
+                                                     train_ratio=train_ratio, val_ratio=val_ratio,
+                                                     **kwargs)
+    else:
+        dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, **kwargs)
+
     if comm.is_main_process():
         dataset.show_test()
     test_items = dataset.query + dataset.gallery

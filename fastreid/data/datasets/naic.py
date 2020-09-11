@@ -1,4 +1,5 @@
 import sys
+
 sys.path.insert(0, './')
 import os
 import os.path as osp
@@ -9,8 +10,8 @@ from fastreid.data.datasets import DATASET_REGISTRY
 import numpy as np
 import json
 
-_NAIC_TRAIN_RATIO = 1.0
-_NAIC_VAL_RATIO = 1.0
+_NAIC_TRAIN_RATIO = 10
+_NAIC_VAL_RATIO = 10
 _NAIC_RANDOM_SEED = 2020
 _NAIC_TESTING = False
 _NAIC_MIN_INSTANCE = 1
@@ -20,16 +21,20 @@ _NAIC_MIN_INSTANCE = 1
 class NAICReID(ImageDataset):
 
     def __init__(self, root='datasets', **kwargs):
-        global _NAIC_TESTING
-        _NAIC_TESTING = kwargs.get('use_testing') or _NAIC_TESTING
-
+        global _NAIC_TESTING, _NAIC_TRAIN_RATIO, _NAIC_VAL_RATIO
+        _NAIC_TESTING = (kwargs.get('use_testing') or _NAIC_TESTING)
+        _NAIC_TRAIN_RATIO = (kwargs.get('train_ratio') or _NAIC_TRAIN_RATIO)
+        _NAIC_VAL_RATIO = (kwargs.get('val_ratio') or _NAIC_VAL_RATIO)
+        self.json_name = f'naic_{int(_NAIC_TRAIN_RATIO):02d}{int(_NAIC_VAL_RATIO):02d}.json'
+        _NAIC_TRAIN_RATIO /= 10.0
+        _NAIC_VAL_RATIO /= 10.0
         self.naic_root, self.img_root, self.label_dir, self.splitor, self.train_prefix = self.get_datainfo(root)
         required_files = [
             self.naic_root
         ]
         self.check_before_run(required_files)
 
-        naic_json = osp.join(self.naic_root, 'naic.json')
+        naic_json = osp.join(self.naic_root, self.json_name)
         if not osp.exists(naic_json):
             self.preprocess(self.naic_root)
 
@@ -39,7 +44,7 @@ class NAICReID(ImageDataset):
         query = naic['val_query'] if not _NAIC_TESTING else naic['test_query']
         gallery = naic['val_gallery'] if not _NAIC_TESTING else naic['test_gallery']
 
-        train = self.process_data(train,True)
+        train = self.process_data(train, True)
         query = self.process_data(query)
         gallery = self.process_data(gallery)
 
@@ -101,7 +106,7 @@ class NAICReID(ImageDataset):
 
         naic_json['val_query'], naic_json['val_gallery'] = split_query_gallery(val)
         naic_json['test_query'], naic_json['test_gallery'] = split_query_gallery(test)
-        with open(osp.join(naic_root, 'naic.json'), 'w') as f:
+        with open(osp.join(naic_root, self.json_name), 'w') as f:
             json.dump(naic_json, f)
 
 
@@ -137,11 +142,10 @@ class NAICSubmit(ImageDataset):
         self.check_before_run(required_files)
         imgs_root = osp.join(self.naic_root, 'image_A')
         train = []
-        query = [(osp.join(imgs_root,'query',img_name),1,1) for img_name
-                 in sorted(os.listdir(osp.join(imgs_root,'query')))]
-        gallery = [(osp.join(imgs_root,'gallery',img_name),1,1) for img_name
-                 in sorted(os.listdir(osp.join(imgs_root,'gallery')))]
-
+        query = [(osp.join(imgs_root, 'query', img_name), 1, 1) for img_name
+                 in sorted(os.listdir(osp.join(imgs_root, 'query')))]
+        gallery = [(osp.join(imgs_root, 'gallery', img_name), 1, 1) for img_name
+                   in sorted(os.listdir(osp.join(imgs_root, 'gallery')))]
 
         super(NAICSubmit, self).__init__(train, query, gallery, **kwargs)
 

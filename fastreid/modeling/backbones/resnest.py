@@ -398,7 +398,7 @@ def build_resnest_backbone(cfg):
                 raise e
         else:
             state_dict = torch.hub.load_state_dict_from_url(
-                model_urls['resnest' + depth[:-1]], progress=True, check_hash=True, map_location=torch.device('cpu'))
+                model_urls['resnest' + depth[:-1]], progress=True, map_location=torch.device('cpu'))
 
         incompatible = model.load_state_dict(state_dict, strict=False)
         if incompatible.missing_keys:

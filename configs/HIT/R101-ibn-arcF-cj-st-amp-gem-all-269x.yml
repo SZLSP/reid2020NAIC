@@ -1,0 +1,31 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "269x"
+    WITH_IBN: True
+    NAME: build_resnest_backbone
+
+  HEADS:
+    CLS_LAYER: arcFace
+    POOL_LAYER: gempool
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: True
+
+DATASETS:
+  NAMES: ("NAICReID","NAIC19_REP")
+  TESTS: ("NAIC19_REP",)
+
+SOLVER:
+  AMP: True
+  CHECKPOINT_PERIOD: 2
+TEST:
+  EVAL_PERIOD: 2
+
+OUTPUT_DIR: "logs/HIT/R101-ibn-arcF-cj-st-amp-gem-all-269x"

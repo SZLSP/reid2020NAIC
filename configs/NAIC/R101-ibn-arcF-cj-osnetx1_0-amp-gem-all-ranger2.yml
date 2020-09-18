@@ -2,11 +2,12 @@ _BASE_: "../Base-bagtricks.yml"
 
 MODEL:
   BACKBONE:
-    DEPTH: "101x"
+    DEPTH: "x1_0"
     WITH_IBN: True
-    NAME: build_resnest_backbone
+    NAME: build_osnet_backbone
 
   HEADS:
+    IN_FEAT: 512
     CLS_LAYER: arcFace
     POOL_LAYER: gempool
 
@@ -19,17 +20,17 @@ INPUT:
     ENABLED: True
 
 DATASETS:
-  NAMES: ("NAICReID:1010","NAIC19_REP:0809")
-  TESTS: ("NAIC19_REP:0809",)
+  NAMES: ("NAICReID:0910","NAIC19_REP:1010")
+  TESTS: ("NAICReID:0910",)
 
 SOLVER:
   OPT: "Ranger"
   AMP: True
   CHECKPOINT_PERIOD: 2
   STEPS: [40, 90]
-  SWA:
-    ENABLED: True
+  IMS_PER_BATCH: 128
+
 TEST:
   EVAL_PERIOD: 2
 
-OUTPUT_DIR: "logs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger-swa"
+OUTPUT_DIR: "logs/NAIC/R101-ibn-arcF-cj-osnetx1_0-amp-gem-all-ranger2"

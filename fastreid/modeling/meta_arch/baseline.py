@@ -42,6 +42,7 @@ class Baseline(nn.Module):
         num_classes = cfg.MODEL.HEADS.NUM_CLASSES
         self.heads = build_reid_heads(cfg, in_feat, num_classes, pool_layer)
 
+
     @property
     def device(self):
         return self.pixel_mean.device
@@ -100,5 +101,8 @@ class Baseline(nn.Module):
 
         if "SmoothAp" in loss_names:
             loss_dict['loss_smooth'] = SmoothAP(self._cfg)(pred_features, gt_labels)
+
+        if "CenterLoss" in loss_names:
+            loss_dict['loss_center'] = CenterLoss(self._cfg)(pred_features, gt_labels)
 
         return loss_dict

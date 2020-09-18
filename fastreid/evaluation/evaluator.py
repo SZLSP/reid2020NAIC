@@ -78,7 +78,7 @@ class DatasetEvaluator:
 #         return results
 
 
-def extract_feature(model, data_loader, evaluator):
+def extract_feature(model, data_loader, evaluator, cfg):
     """
         Run model on the data_loader and evaluate the metrics with evaluator.
         The model will be used in eval mode.
@@ -111,11 +111,22 @@ def extract_feature(model, data_loader, evaluator):
                 total_compute_time = 0
 
             start_compute_time = time.perf_counter()
-            outputs = model(inputs)
+            if cfg.TEST.FLIP_FEATS == 'on':
+                in_feat = cfg.HEADS.REDUCTION_DIM \
+                    if cfg.MODEL.HEADS.NAME == 'ReductionHead' else cfg.MODEL.HEADS.IN_FEAT
+                feat = torch.FloatTensor(inputs["images"].size(0), in_feat).zero_().cuda()
+                for i in range(2):
+                    if i == 1:
+                        inv_idx = torch.arange(inputs["images"].size(3) - 1, -1, -1).long()
+                        inputs["images"] = inputs["images"].index_select(3, inv_idx)
+                    f = model(inputs)
+                    feat = feat + f
+            else:
+                feat = model(inputs)
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
             total_compute_time += time.perf_counter() - start_compute_time
-            evaluator.process(inputs, outputs)
+            evaluator.process(inputs, feat)
 
             idx += 1
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)

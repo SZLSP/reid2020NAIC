@@ -28,10 +28,14 @@ def build_reid_train_loader(cfg):
         data_info = [temp.strip() for temp in d.split(':')]
         if len(data_info) == 2:
             ratio = data_info[1]
-            assert len(ratio) == 4 and ratio.isnumeric(), 'required four figures, bug got {}'.format(ratio)
-            train_ratio, val_ratio = float(ratio[:2]), float(ratio[2:])
+            assert len(ratio) == 4 or len(ratio) == 6 and ratio.isnumeric(), 'required four figures or six figures, ' \
+                                                                             'bug got {}'.format(ratio)
+            if len(ratio) == 4:
+                ratio += '01'
+            train_ratio, val_ratio, min_instance = float(ratio[:2]), float(ratio[2:4]), float(ratio[4:])
             dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, combineall=cfg.DATASETS.COMBINEALL,
-                                                         train_ratio=train_ratio, val_ratio=val_ratio)
+                                                         train_ratio=train_ratio, val_ratio=val_ratio,
+                                                         min_instance=min_instance)
         else:
             dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, combineall=cfg.DATASETS.COMBINEALL)
         if comm.is_main_process():
@@ -74,10 +78,15 @@ def build_reid_test_loader(cfg, dataset_name, **kwargs):
     data_info = [temp.strip() for temp in dataset_name.split(':')]
     if len(data_info) == 2:
         ratio = data_info[1]
-        assert len(ratio) == 4 and ratio.isnumeric(), 'required four figures, bug got {}'.format(ratio)
-        train_ratio, val_ratio = float(ratio[:2]), float(ratio[2:])
+        assert len(ratio) == 4 or len(ratio) == 6 and ratio.isnumeric(), 'required four figures or six figures, ' \
+                                                                         'bug got {}'.format(ratio)
+        if len(ratio) == 4:
+            ratio += '01'
+        train_ratio, val_ratio, min_instance = float(ratio[:2]), float(ratio[2:4]), float(ratio[4:])
         dataset = DATASET_REGISTRY.get(data_info[0])(root=_root,
-                                                     train_ratio=train_ratio, val_ratio=val_ratio,
+                                                     train_ratio=train_ratio,
+                                                     val_ratio=val_ratio,
+                                                     min_instance=min_instance,
                                                      **kwargs)
     else:
         dataset = DATASET_REGISTRY.get(data_info[0])(root=_root, **kwargs)

@@ -39,6 +39,8 @@ _C.MODEL.BACKBONE.NORM = "BN"
 _C.MODEL.BACKBONE.NORM_SPLIT = 1
 # If use IBN block in backbone
 _C.MODEL.BACKBONE.WITH_IBN = False
+_C.MODEL.BACKBONE.USE_IEBN = False
+_C.MODEL.BACKBONE.IN = "InstanceNorm2d"
 # If use SE block in backbone
 _C.MODEL.BACKBONE.WITH_SE = False
 # If use Non-local block in backbone
@@ -50,7 +52,7 @@ _C.MODEL.BACKBONE.PRETRAIN_PATH = ''
 
 # Resnetst config
 _C.MODEL.BACKBONE.RECTIFIED_CONV = False
-
+_C.MODEL.BACKBONE.BOTTLE_INFO = '2s1x64d'
 # ---------------------------------------------------------------------------- #
 # REID HEADS options
 # ---------------------------------------------------------------------------- #
@@ -99,12 +101,18 @@ _C.MODEL.LOSSES.TRI.MARGIN = 0.3
 _C.MODEL.LOSSES.TRI.NORM_FEAT = False
 _C.MODEL.LOSSES.TRI.HARD_MINING = True
 _C.MODEL.LOSSES.TRI.SCALE = 1.0
+_C.MODEL.LOSSES.TRI.CONSTRAINT = False
+_C.MODEL.LOSSES.TRI.CONSTRAINT_SCALE = 0.2
 
 # Circle Loss options
 _C.MODEL.LOSSES.CIRCLE = CN()
 _C.MODEL.LOSSES.CIRCLE.MARGIN = 0.25
 _C.MODEL.LOSSES.CIRCLE.ALPHA = 128
 _C.MODEL.LOSSES.CIRCLE.SCALE = 1.0
+
+# Center Loss options
+_C.MODEL.LOSSES.Center = CN()
+_C.MODEL.LOSSES.Center.SCALE = 0.0005
 
 # Focal Loss options
 _C.MODEL.LOSSES.FL = CN()
@@ -257,6 +265,7 @@ _C.TEST.EVAL_PERIOD = 5
 _C.TEST.IMS_PER_BATCH = 64
 _C.TEST.METRIC = "cosine"
 _C.TEST.METRIC_METHOD = 'naic'
+_C.TEST.FLIP_FEATS = 'off'
 _C.TEST.ROC_ENABLED = False
 _C.TEST.ITERATIONS = []
 

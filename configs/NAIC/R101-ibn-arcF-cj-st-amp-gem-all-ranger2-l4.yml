@@ -19,17 +19,15 @@ INPUT:
     ENABLED: True
 
 DATASETS:
-  NAMES: ("NAICReID:1010","NAIC19_REP:0809")
-  TESTS: ("NAIC19_REP:0809",)
+  NAMES: ("NAICReID:091004","NAIC19_REP:101004")
+  TESTS: ("NAICReID:091004",)
 
 SOLVER:
   OPT: "Ranger"
   AMP: True
   CHECKPOINT_PERIOD: 2
   STEPS: [40, 90]
-  SWA:
-    ENABLED: True
 TEST:
   EVAL_PERIOD: 2
 
-OUTPUT_DIR: "logs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger-swa"
+OUTPUT_DIR: "logs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-l4"

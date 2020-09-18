@@ -5,7 +5,6 @@
 """
 
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 
@@ -58,11 +57,11 @@ class AdaptiveAvgMaxPool2d(nn.Module):
     def __init__(self):
         super(AdaptiveAvgMaxPool2d, self).__init__()
         self.gap = FastGlobalAvgPool2d()
-        self.gmp = nn.AdaptiveMaxPool2d(1)
+        self.gmp = nn.AdaptiveMaxPool2d(1)  # B x C x 1 x 1
 
     def forward(self, x):
-        avg_feat = self.gap(x)
-        max_feat = self.gmp(x)
+        avg_feat = self.gap(x)  # B x C
+        max_feat = self.gmp(x)  # B x C
         feat = avg_feat + max_feat
         return feat
 

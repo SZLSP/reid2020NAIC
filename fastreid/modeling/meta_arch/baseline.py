@@ -42,6 +42,10 @@ class Baseline(nn.Module):
         num_classes = cfg.MODEL.HEADS.NUM_CLASSES
         self.heads = build_reid_heads(cfg, in_feat, num_classes, pool_layer)
 
+        # loss that has parameters
+        loss_names = self._cfg.MODEL.LOSSES.NAME
+        self.centerloss = CenterLoss(self._cfg) if "CenterLoss" in loss_names else None
+
 
     @property
     def device(self):
@@ -103,6 +107,6 @@ class Baseline(nn.Module):
             loss_dict['loss_smooth'] = SmoothAP(self._cfg)(pred_features, gt_labels)
 
         if "CenterLoss" in loss_names:
-            loss_dict['loss_center'] = CenterLoss(self._cfg)(pred_features, gt_labels)
+            loss_dict['loss_center'] = self.centerloss(pred_features, gt_labels)
 
         return loss_dict

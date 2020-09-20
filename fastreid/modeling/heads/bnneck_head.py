@@ -8,6 +8,7 @@ from fastreid.layers import *
 from fastreid.utils.weight_init import weights_init_kaiming, weights_init_classifier
 from .build import REID_HEADS_REGISTRY
 from .classsifiers import get_classifier
+import torch.nn.functional as F
 
 
 @REID_HEADS_REGISTRY.register()

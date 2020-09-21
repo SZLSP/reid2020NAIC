@@ -69,6 +69,6 @@ TEST:
   RERANK:
     K1: 20
     K2: 2
-
+    LAMBDA: 0.8
 CUDNN_BENCHMARK: True
 

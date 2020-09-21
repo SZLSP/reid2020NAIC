@@ -18,5 +18,5 @@ python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-ge
 python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all.yml --gpu-id 1 --test-iter 225599 --test-permutation
 
 python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2.yml --gpu-id 0 --test-iter 225599 --test-permutation
-python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ntl.yml --gpu-id 0 --test-iter 115199,119999,110399 --test-permutation
+python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ntl.yml --gpu-id 0 --test-iter 206399,211199,215999,220799,225599,230399,235199,239999,244799,249599,254399,259199,263999,268799,273599,278399,283199,287999,292799,297599 --test-permutation
 python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2.iebn2 --gpu-id 0 --test-iter 225599 --test-permutation

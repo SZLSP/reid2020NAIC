@@ -4,6 +4,8 @@
 @contact: sherlockliao01@gmail.com
 """
 
+from torch.functional import F
+
 from fastreid.layers import *
 from fastreid.utils.weight_init import weights_init_kaiming, weights_init_classifier
 from .build import REID_HEADS_REGISTRY

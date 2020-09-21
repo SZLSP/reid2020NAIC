@@ -11,4 +11,5 @@ from .regnet import build_regnet_backbone
 from .resnest import build_resnest_backbone
 from .resnest_in import build_resnest_in_backbone
 from .resnet import build_resnet_backbone
+from .resnet_ibn_b import build_resnet_ibn_b_backbone
 from .resnext import build_resnext_backbone

@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
+from .build import BACKBONE_REGISTRY
+
 __all__ = ['ResNet', 'resnet50_ibn_b', 'resnet101_ibn_b',
            'resnet152_ibn_b']
 
@@ -190,7 +192,17 @@ def resnet101_ibn_b(last_stride, pretrained=False, **kwargs):
     """
     model = ResNet(last_stride, Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
+        state_dict = model_zoo.load_url(model_urls['resnet101'])
+        for key, module in model.named_modules():
+            # if module.__class__.__name__ == 'BAN2d':
+            if isinstance(module, nn.InstanceNorm2d):
+                running_mean_key = key + '.running_mean'
+                running_var_key = key + '.running_var'
+                if state_dict.get(running_mean_key) is not None:
+                    del state_dict[running_mean_key]
+                if state_dict.get(running_var_key) is not None:
+                    del state_dict[running_var_key]
+        model.load_state_dict(state_dict, False)
     return model
 
 
@@ -202,5 +214,39 @@ def resnet152_ibn_b(pretrained=False, **kwargs):
     """
     model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
+        state_dict = model_zoo.load_url(model_urls['resnet152'])
+        for key, module in model.named_modules():
+            # if module.__class__.__name__ == 'BAN2d':
+            if isinstance(module, nn.InstanceNorm2d):
+                running_mean_key = key + '.running_mean'
+                running_var_key = key + '.running_var'
+                if state_dict.get(running_mean_key) is not None:
+                    del state_dict[running_mean_key]
+                if state_dict.get(running_var_key) is not None:
+                    del state_dict[running_var_key]
+        model.load_state_dict(state_dict)
+    return model
+
+
+@BACKBONE_REGISTRY.register()
+def build_resnet_ibn_b_backbone(cfg):
+    """
+    Create a ResNet instance from config.
+    Returns:
+        ResNet: a :class:`ResNet` instance.
+    """
+
+    # fmt: off
+    pretrain = cfg.MODEL.BACKBONE.PRETRAIN
+    pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+    last_stride = cfg.MODEL.BACKBONE.LAST_STRIDE
+    bn_norm = cfg.MODEL.BACKBONE.NORM
+    num_splits = cfg.MODEL.BACKBONE.NORM_SPLIT
+    with_ibn = cfg.MODEL.BACKBONE.WITH_IBN
+    with_se = cfg.MODEL.BACKBONE.WITH_SE
+    with_nl = cfg.MODEL.BACKBONE.WITH_NL
+    depth = cfg.MODEL.BACKBONE.DEPTH
+
+    model = eval(f'resnet{depth[:-1]}_ibn_b')(last_stride, pretrain)
+
     return model

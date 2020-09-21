@@ -111,3 +111,24 @@ python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st_in2
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st_in3-amp-gem-all-ranger2.yml --gpu-id 3 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st_in4-amp-gem-all-ranger2.yml --gpu-id 5 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-in-arcF-cj-st-amp-gem-all-ranger2.yml --gpu-id 6 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-lm.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-nf.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-nm.yml --gpu-id 3 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-wtl.yml --gpu-id 4 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibnb-arcF-cj-amp-gem-all-ranger2-wtl.yml --gpu-id 5 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibnb-arcF-cj-amp-gem-all-ranger2.yml --gpu-id 6 --test-permutation
+
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-lm2.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-cent.yml --gpu-id 4 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-cent2.yml --gpu-id 5 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-cent3.yml --gpu-id 6 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-cent4.yml --gpu-id 3 --test-permutation
+
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ncent.yml --gpu-id 1 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ncent1.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ncent2.yml --gpu-id 3 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-lm2.yml --gpu-id 5 --test-permutation --resume
+

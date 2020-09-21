@@ -32,8 +32,10 @@ class Baseline(nn.Module):
         elif pool_type == 'avgpool':    pool_layer = nn.AdaptiveAvgPool2d(1)
         elif pool_type == 'maxpool':    pool_layer = nn.AdaptiveMaxPool2d(1)
         elif pool_type == 'gempool':    pool_layer = GeneralizedMeanPoolingP()
-        elif pool_type == "avgmaxpool": pool_layer = AdaptiveAvgMaxPool2d()
-        elif pool_type == "identity":   pool_layer = nn.Identity()
+        elif pool_type == "avgmaxpool":
+            pool_layer = AdaptiveAvgMaxPool2d()
+        elif pool_type == "identity":
+            pool_layer = nn.Identity()
         else:
             raise KeyError(f"{pool_type} is invalid, please choose from "
                            f"'avgpool', 'maxpool', 'gempool', 'avgmaxpool' and 'identity'.")
@@ -42,6 +44,9 @@ class Baseline(nn.Module):
         num_classes = cfg.MODEL.HEADS.NUM_CLASSES
         self.heads = build_reid_heads(cfg, in_feat, num_classes, pool_layer)
 
+        loss_names = self._cfg.MODEL.LOSSES.NAME
+        if "CenterLoss" in loss_names:
+            self.center_criterion = CenterLoss(cfg)
 
     @property
     def device(self):
@@ -103,6 +108,6 @@ class Baseline(nn.Module):
             loss_dict['loss_smooth'] = SmoothAP(self._cfg)(pred_features, gt_labels)
 
         if "CenterLoss" in loss_names:
-            loss_dict['loss_center'] = CenterLoss(self._cfg)(pred_features, gt_labels)
+            loss_dict['loss_center'] = self.center_criterion(pred_features, gt_labels)
 
         return loss_dict

@@ -6,6 +6,17 @@ from torch import nn
 from fastreid.config.defaults import _C
 
 
+def softmax_weights(dist, mask):
+    min_v = torch.min(dist * mask, dim=1, keepdim=True)[0]
+    diff = dist - min_v
+
+    numerator = torch.exp(diff) * mask
+    numerator[mask == 0] = 0
+    Z = torch.sum(numerator, dim=1, keepdim=True) + 1e-6  # avoid division by zero
+    W = numerator / Z
+    return W
+
+
 class CenterLoss(nn.Module):
     """Center loss.
     Reference:
@@ -19,30 +30,59 @@ class CenterLoss(nn.Module):
         super(CenterLoss, self).__init__()
         self.cfg = cfg
         self.num_classes = cfg.MODEL.HEADS.NUM_CLASSES
+
         self.feat_dim = self.cfg.HEADS.REDUCTION_DIM \
             if self.cfg.MODEL.HEADS.NAME == 'ReductionHead' else self.cfg.MODEL.HEADS.IN_FEAT
         self._scale = cfg.MODEL.LOSSES.Center.SCALE
-        self.use_gpu = torch.cuda.is_available()
+        self.alpha = cfg.MODEL.LOSSES.Center.ALPHA
+        self.beta = cfg.MODEL.LOSSES.Center.BETA
+        self.hard_mining = cfg.MODEL.LOSSES.Center.HARD_MINING
+        self.margin = cfg.MODEL.LOSSES.Center.MARGIN
+        # self.use_gpu = torch.cuda.is_available()
+        self.register_buffer('centers', torch.randn(self.num_classes, self.feat_dim))
 
-        if self.use_gpu:
-            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim).cuda())
-        else:
-            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
+        # if self.use_gpu:
+        #
+        #         nn.Parameter(torch.randn(self.num_classes, self.feat_dim).cuda())
+        # else:
+        #     self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
 
-    def forward(self, x, labels):
+    def forward(self, features, labels):
         """
         Args:
             x: feature matrix with shape (batch_size, feat_dim).
             labels: ground truth labels with shape (batch_size).
         """
-        batch_size = x.size(0)
-        centers = self.centers[labels.long()]
+        batch_size = features.size(0)
+        labels = labels.long()
+        centers = self.centers[labels].detach()
 
-        dist = torch.pow(x, 2).sum(dim=1) + \
-               torch.pow(centers, 2).sum(dim=1) - \
-               2 * (x * centers).sum(dim=1)
+        delta1 = (centers - features)
+        center_diff = centers.unsqueeze(1) - centers.unsqueeze(0)
+        mask = (labels.unsqueeze(0) != labels.unsqueeze(1)).float()
+        center_dist = torch.norm(center_diff, dim=2)
+        mask = mask * (center_dist <= self.margin).float()
+        if mask.sum() < 1:
+            delta2 = torch.zeros_like(centers)
+        else:
+            if self.hard_mining:
+                min_dist = torch.min(center_dist + (1 - mask) * 1e10)
+                mask = center_dist.isclose(min_dist).float() * mask
+            weight = softmax_weights(-center_dist, mask)
+            delta2 = (center_diff * weight.unsqueeze(2)).sum(dim=1)
 
-        loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
+        dist = torch.square(centers - features)
+        if torch.any(torch.isnan(delta2)) or torch.any(torch.isnan(delta1)):
+            print()
+        self.centers[labels] = centers - self.alpha * delta1 - self.beta * delta2  # update center
+
+        # dist = torch.pow(x, 2).sum(dim=1) + \
+        #        torch.pow(centers, 2).sum(dim=1) - \
+        #        2 * (x * centers).sum(dim=1)
+
+        loss = dist.clamp(min=1e-12, max=1e+12).mean()
+        if torch.isnan(loss):
+            print()
 
         return loss * self._scale
 
@@ -94,7 +134,7 @@ class CenterLoss_old(nn.Module):
 if __name__ == '__main__':
     _C.defrost()
     _C.MODEL.HEADS.NUM_CLASSES = 6
-    use_gpu = True
+    use_gpu = False
     center_loss = CenterLoss(_C)
     center_loss2 = CenterLoss_old(_C)
     center_loss2.centers = nn.Parameter(center_loss.centers.data.clone())

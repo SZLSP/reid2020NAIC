@@ -13,6 +13,10 @@ MODEL:
   LOSSES:
     NAME: ("CrossEntropyLoss", "TripletLoss","CenterLoss")
 
+    Center:
+      SCALE: 0.0005
+      ALPHA: 1.0
+
 INPUT:
   REA:
     ENABLED: false

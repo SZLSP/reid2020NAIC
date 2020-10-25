@@ -67,8 +67,9 @@ TEST:
   IMS_PER_BATCH: 128
 
   RERANK:
-    K1: 20
-    K2: 2
+    K1: 30
+    K2: 4
     LAMBDA: 0.8
+
 CUDNN_BENCHMARK: True
 

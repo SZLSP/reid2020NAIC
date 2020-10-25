@@ -140,3 +140,7 @@ class KDTrainer(DefaultTrainer):
         p_t = F.softmax(y_t / t, dim=1)
         loss = F.kl_div(p_s, p_t, reduction='sum') * (t ** 2) / y_s.shape[0]
         return loss
+
+    @staticmethod
+    def nce_loss():
+        return

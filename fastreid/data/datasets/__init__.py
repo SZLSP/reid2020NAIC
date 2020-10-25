@@ -19,6 +19,6 @@ from .msmt17 import MSMT17
 from .veri import VeRi
 from .vehicleid import VehicleID, SmallVehicleID, MediumVehicleID, LargeVehicleID
 from .veriwild import VeRiWild, SmallVeRiWild, MediumVeRiWild, LargeVeRiWild
-from .naic import NAICReID, NAICSubmit, NAIC19_PRE, NAIC19_REP, NAIC19Test
+from .naic import NAICReID, NAICSubmit, NAIC19_PRE, NAIC19_REP, NAIC19Test , NAICReID_REP
 
 __all__ = [k for k in globals().keys() if "builtin" not in k and not k.startswith("_")]

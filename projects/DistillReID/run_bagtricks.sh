@@ -32,8 +32,8 @@ CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --con
 ## KD-bot34ibn-bot18ibn.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-dukemtmcreid/KD-bot34ibn-bot18ibn.yml MODEL.DEVICE "cuda:0"
 #
-## KD-bot101ibn-bot50.yml
-#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-dukemtmcreid/KD-bot101ibn-bot50.yml MODEL.DEVICE "cuda:0"
+## KD-bot101ibn-bot101.yml
+#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-dukemtmcreid/KD-bot101ibn-bot101.yml MODEL.DEVICE "cuda:0"
 #
 ## KD-bot101ibn-bot34.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-dukemtmcreid/KD-bot101ibn-bot34.yml MODEL.DEVICE "cuda:0"
@@ -76,8 +76,8 @@ CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --con
 ## KD-bot34ibn-bot18ibn.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-market1501/KD-bot34ibn-bot18ibn.yml MODEL.DEVICE "cuda:0"
 #
-## KD-bot101ibn-bot50.yml
-#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-market1501/KD-bot101ibn-bot50.yml MODEL.DEVICE "cuda:0"
+## KD-bot101ibn-bot101.yml
+#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-market1501/KD-bot101ibn-bot101.yml MODEL.DEVICE "cuda:0"
 #
 ## KD-bot101ibn-bot34.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-market1501/KD-bot101ibn-bot34.yml MODEL.DEVICE "cuda:0"
@@ -121,8 +121,8 @@ CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --con
 ## KD-bot34ibn-bot18ibn.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-msmt17/KD-bot34ibn-bot18ibn.yml MODEL.DEVICE "cuda:0"
 #
-## KD-bot101ibn-bot50.yml
-#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-msmt17/KD-bot101ibn-bot50.yml MODEL.DEVICE "cuda:0"
+## KD-bot101ibn-bot101.yml
+#CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-msmt17/KD-bot101ibn-bot101.yml MODEL.DEVICE "cuda:0"
 #
 ## KD-bot101ibn-bot34.yml
 #CUDA_VISIBLE_DEVICES=$CUDA python ./projects/DistillReID/train_net.py --kd --config-file ./projects/DistillReID/configs-bagtricks-ibn-msmt17/KD-bot101ibn-bot34.yml MODEL.DEVICE "cuda:0"

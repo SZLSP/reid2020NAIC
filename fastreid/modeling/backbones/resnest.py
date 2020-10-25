@@ -5,12 +5,14 @@
 
 import logging
 import math
+import re
 
 import torch
 from torch import nn
 
 from fastreid.layers import (
     IBN,
+    IEBN,
     Non_local,
     SplAtConv2d,
     get_norm,
@@ -20,12 +22,19 @@ from .build import BACKBONE_REGISTRY
 
 logger = logging.getLogger(__name__)
 _url_format = 'https://s3.us-west-1.wasabisys.com/resnest/torch/{}-{}.pth'
-
+'https://s3.us-west-1.wasabisys.com/resnest/torch/resnest50_fast_1s4x24d-d4a4f76f.pth'
 _model_sha256 = {name: checksum for checksum, name in [
     ('528c19ca', 'resnest50'),
     ('22405ba7', 'resnest101'),
     ('75117900', 'resnest200'),
     ('0cc87c48', 'resnest269'),
+    ('d8fbf808', 'resnest50_fast_1s1x64d'),
+    ('44938639', 'resnest50_fast_2s1x64d'),
+    ('f74f3fc3', 'resnest50_fast_4s1x64d'),
+    ('32830b84', 'resnest50_fast_1s2x40d'),
+    ('9d126481', 'resnest50_fast_2s2x40d'),
+    ('41d14ed0', 'resnest50_fast_4s2x40d'),
+    ('d4a4f76f', 'resnest50_fast_1s4x24d'),
 ]}
 
 
@@ -229,8 +238,10 @@ class ResNest(nn.Module):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
             elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                if m.weight is not None:
+                    m.weight.data.fill_(1)
+                if m.bias is not None:
+                    m.bias.data.zero_()
 
         if with_nl:
             self._build_nonlocal(layers, non_layers, bn_norm, num_splits)
@@ -364,6 +375,7 @@ def build_resnest_backbone(cfg):
     """
 
     # fmt: off
+    use_iebn = cfg.MODEL.BACKBONE.USE_IEBN
     pretrain = cfg.MODEL.BACKBONE.PRETRAIN
     pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
     last_stride = cfg.MODEL.BACKBONE.LAST_STRIDE
@@ -373,6 +385,16 @@ def build_resnest_backbone(cfg):
     with_se = cfg.MODEL.BACKBONE.WITH_SE
     with_nl = cfg.MODEL.BACKBONE.WITH_NL
     depth = cfg.MODEL.BACKBONE.DEPTH
+    bottle_info = cfg.MODEL.BACKBONE.BOTTLE_INFO
+    bottle_info = re.match('(\d*)s(\d*)x(\d*)d', bottle_info)
+    radix = int(bottle_info.group(1))
+    groups = int(bottle_info.group(2))
+    bottleneck_width = int(bottle_info.group(3))
+    is_default = radix == 2 and groups == 1 and bottleneck_width == 64
+    pretrain = pretrain and (is_default or depth == '50x')
+    if use_iebn:
+        global IBN
+        IBN = IEBN
 
     rectified_conv = cfg.MODEL.BACKBONE.RECTIFIED_CONV
 
@@ -381,7 +403,7 @@ def build_resnest_backbone(cfg):
     nl_layers_per_stage = {"50x": [0, 2, 3, 0], "101x": [0, 2, 3, 0], "200x": [0, 2, 3, 0], "269x": [0, 2, 3, 0]}[depth]
     stem_width = {"50x": 32, "101x": 64, "200x": 64, "269x": 64}[depth]
     model = ResNest(last_stride, bn_norm, num_splits, with_ibn, with_nl, Bottleneck, num_blocks_per_stage,
-                    nl_layers_per_stage, radix=2, groups=1, bottleneck_width=64,
+                    nl_layers_per_stage, radix=radix, groups=groups, bottleneck_width=bottleneck_width,
                     deep_stem=True, stem_width=stem_width, avg_down=True, rectified_conv=rectified_conv,
                     avd=True, avd_first=False, )
     if pretrain:
@@ -397,8 +419,20 @@ def build_resnest_backbone(cfg):
                 logger.info("State dict keys error! Please check the state dict.")
                 raise e
         else:
+            url_key = 'resnest' + depth[:-1]
+            if depth == '50x':
+                url_key += '_fast_{}s{}x{}d'.format(radix, groups, bottleneck_width)
+
             state_dict = torch.hub.load_state_dict_from_url(
-                model_urls['resnest' + depth[:-1]], progress=True, map_location=torch.device('cpu'))
+                model_urls[url_key], progress=True, check_hash=True, map_location=torch.device('cpu'))
+        for key, module in model.named_modules():
+            if module.__class__.__name__ == 'BAN2d':
+                weight_key = key + '.weight'
+                bias_key = key + '.bias'
+                if state_dict.get(weight_key) is not None:
+                    state_dict[weight_key] = state_dict[weight_key].view(1, -1, 1, 1)
+                if state_dict.get(bias_key) is not None:
+                    state_dict[bias_key] = state_dict[bias_key].view(1, -1, 1, 1)
 
         incompatible = model.load_state_dict(state_dict, strict=False)
         if incompatible.missing_keys:

@@ -1,0 +1,58 @@
+_BASE_: "../../../configs/Base-bagtricks.yml"
+
+SOLVER:
+  IMS_PER_BATCH: 128
+  OPT: "Ranger"
+  AMP: True
+  CHECKPOINT_PERIOD: 2
+  STEPS: [40, 80 , 100]
+
+MODEL_TEACHER:
+  META_ARCHITECTURE: "Baseline"
+
+
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+    NAME: build_resnest_backbone
+
+  HEADS:
+    CLS_LAYER: arcFace
+    POOL_LAYER: gempool
+
+
+
+MODEL:
+  META_ARCHITECTURE: "Baseline"
+
+  BACKBONE:
+    NAME: "build_resnet_backbone"
+    NORM: "BN"
+    DEPTH: "101x"
+    LAST_STRIDE: 1
+    WITH_IBN: False
+    PRETRAIN: True
+
+  HEADS:
+    CLS_LAYER: arcFace
+    POOL_LAYER: gempool
+
+
+
+  STUDENT_WEIGHTS: ""
+  TEACHER_WEIGHTS: "./logs/HIT/R101-ibn-arcF-cj-st-amp-gem-all-ranger2/model_best.pth"
+DATASETS:
+  NAMES: ("NAICReID:0910","NAIC19_REP:1010")
+  TESTS: ("NAICReID:0910",)
+
+DATALOADER:
+  NUM_WORKERS: 8
+
+INPUT:
+    REA:
+      ENABLED: false
+
+    CJ:
+      PROB: 0.6
+      ENABLED: True
+OUTPUT_DIR: "./logs/HIT/KD-bot101ibn-bot101"

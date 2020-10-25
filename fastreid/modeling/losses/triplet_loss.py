@@ -97,6 +97,8 @@ class TripletLoss(object):
         self._normalize_feature = cfg.MODEL.LOSSES.TRI.NORM_FEAT
         self._scale = cfg.MODEL.LOSSES.TRI.SCALE
         self._hard_mining = cfg.MODEL.LOSSES.TRI.HARD_MINING
+        self._constraint = cfg.MODEL.LOSSES.TRI.CONSTRAINT
+        self._constraint_scale = cfg.MODEL.LOSSES.TRI.CONSTRAINT_SCALE
 
     def __call__(self, embedding, targets):
         if self._normalize_feature:
@@ -128,5 +130,8 @@ class TripletLoss(object):
         else:
             loss = F.soft_margin_loss(dist_an - dist_ap, y)
             if loss == float('Inf'): loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=0.3)
+
+        if self._constraint:
+            loss += self._constraint_scale * dist_ap.mean() / dist_an.mean()
 
         return loss * self._scale

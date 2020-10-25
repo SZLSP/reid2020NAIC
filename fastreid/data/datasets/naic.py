@@ -10,8 +10,8 @@ from fastreid.data.datasets import DATASET_REGISTRY
 import numpy as np
 import json
 
-_NAIC_TRAIN_RATIO = 10
-_NAIC_VAL_RATIO = 10
+_NAIC_TRAIN_RATIO = 8.0
+_NAIC_VAL_RATIO = 9.0
 _NAIC_RANDOM_SEED = 2020
 _NAIC_TESTING = False
 _NAIC_MIN_INSTANCE = 1
@@ -21,11 +21,12 @@ _NAIC_MIN_INSTANCE = 1
 class NAICReID(ImageDataset):
 
     def __init__(self, root='datasets', **kwargs):
-        global _NAIC_TESTING, _NAIC_TRAIN_RATIO, _NAIC_VAL_RATIO
+        global _NAIC_TESTING, _NAIC_TRAIN_RATIO, _NAIC_VAL_RATIO, _NAIC_MIN_INSTANCE
         _NAIC_TESTING = (kwargs.get('use_testing') or _NAIC_TESTING)
         _NAIC_TRAIN_RATIO = (kwargs.get('train_ratio') or _NAIC_TRAIN_RATIO)
-        _NAIC_VAL_RATIO = (kwargs.get('val_ratio') or _NAIC_VAL_RATIO)
-        self.json_name = f'naic_{int(_NAIC_TRAIN_RATIO):02d}{int(_NAIC_VAL_RATIO):02d}.json'
+        _NAIC_VAL_RATIO = kwargs.get('val_ratio') or _NAIC_VAL_RATIO
+        _NAIC_MIN_INSTANCE = kwargs.get('min_instance') or _NAIC_MIN_INSTANCE
+        self.json_name = f'naic_{int(_NAIC_TRAIN_RATIO):02d}{int(_NAIC_VAL_RATIO):02d}{int(_NAIC_MIN_INSTANCE):02d}.json'
         _NAIC_TRAIN_RATIO /= 10.0
         _NAIC_VAL_RATIO /= 10.0
         self.naic_root, self.img_root, self.label_dir, self.splitor, self.train_prefix = self.get_datainfo(root)
@@ -130,12 +131,21 @@ class NAIC19_REP(NAICReID):
         spiltor = ' '
         train_prefix = 'naic19rep'
         return naic_root, img_root, label_dir, spiltor, train_prefix
-
+@DATASET_REGISTRY.register()
+class NAICReID_REP(NAICReID):
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic_rep')
+        naic_root = osp.join(naic_root, 'train')
+        img_root = osp.join(naic_root, 'images')
+        label_dir = osp.join(naic_root, 'label.txt')
+        spiltor = ':'
+        train_prefix = 'naicrep'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
 
 @DATASET_REGISTRY.register()
 class NAICSubmit(ImageDataset):
     def __init__(self, root='datasets', **kwargs):
-        self.naic_root = osp.join(root, 'naic')
+        self.naic_root = osp.join(root, 'naic_rep')
         required_files = [
             self.naic_root
         ]

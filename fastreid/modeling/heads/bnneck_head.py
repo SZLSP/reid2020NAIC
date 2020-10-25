@@ -8,6 +8,7 @@ from fastreid.layers import *
 from fastreid.utils.weight_init import weights_init_kaiming, weights_init_classifier
 from .build import REID_HEADS_REGISTRY
 from .classsifiers import get_classifier
+import torch.nn.functional as F
 
 
 @REID_HEADS_REGISTRY.register()
@@ -34,7 +35,7 @@ class BNneckHead(nn.Module):
         See :class:`ReIDHeads.forward`.
         """
         global_feat = self.pool_layer(features)
-        bn_feat = self.bnneck(global_feat)
+        bn_feat = self.bnneck(global_feat)  # B x C x 1 x 1
         bn_feat = bn_feat[..., 0, 0]
 
         # Evaluation

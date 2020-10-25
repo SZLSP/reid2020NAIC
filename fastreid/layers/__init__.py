@@ -7,6 +7,7 @@
 from .activation import *
 from .am_softmax import AMSoftmax
 from .arc_softmax import ArcSoftmax
+from .ban import BAN2d
 from .batch_drop import BatchDrop
 from .batch_norm import *
 from .circle_softmax import CircleSoftmax

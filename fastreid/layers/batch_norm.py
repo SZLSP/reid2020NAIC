@@ -7,8 +7,12 @@
 import logging
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torch import nn
+from torch.nn.modules.batchnorm import _BatchNorm
+from torch.nn.parameter import Parameter
+
+from .norm_layers import *
 
 __all__ = [
     "BatchNorm",
@@ -17,7 +21,44 @@ __all__ = [
     "FrozenBatchNorm",
     "SyncBatchNorm",
     "get_norm",
+    "IEBN",
+    "BAN2d"
 ]
+
+
+class _BatchAttNorm(_BatchNorm):
+    def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=False):
+        super(_BatchAttNorm, self).__init__(num_features, eps, momentum, affine)
+        self.avg = nn.AdaptiveAvgPool2d((1, 1))
+        self.sigmoid = nn.Sigmoid()
+        self.weight = Parameter(torch.Tensor(1, num_features, 1, 1))
+        self.bias = Parameter(torch.Tensor(1, num_features, 1, 1))
+        self.weight_readjust = Parameter(torch.Tensor(1, num_features, 1, 1))
+        self.bias_readjust = Parameter(torch.Tensor(1, num_features, 1, 1))
+        self.weight_readjust.data.fill_(0)
+        self.bias_readjust.data.fill_(-1)
+        self.weight.data.fill_(1)
+        self.bias.data.fill_(0)
+
+    def forward(self, input):
+        self._check_input_dim(input)
+
+        # Batch norm
+        attention = self.sigmoid(self.avg(input) * self.weight_readjust + self.bias_readjust)
+        bn_w = self.weight * attention
+
+        out_bn = F.batch_norm(
+            input, self.running_mean, self.running_var, None, None,
+            self.training, self.momentum, self.eps)
+        out_bn = out_bn * bn_w + self.bias
+
+        return out_bn
+
+
+class BAN2d(_BatchAttNorm):
+    def _check_input_dim(self, input):
+        if input.dim() != 4:
+            raise ValueError('expected 4D input (got {}D input)'.format(input.dim()))
 
 
 class BatchNorm(nn.BatchNorm2d):
@@ -47,6 +88,25 @@ class IBN(nn.Module):
         self.half = half1
         half2 = planes - half1
         self.IN = nn.InstanceNorm2d(half1, affine=True)
+        # self.IN = InstanceEnhancementBatchNorm2d(half1)
+        self.BN = get_norm(bn_norm, half2, num_splits)
+
+    def forward(self, x):
+        split = torch.split(x, self.half, 1)
+        out1 = self.IN(split[0].contiguous())
+        out2 = self.BN(split[1].contiguous())
+        out = torch.cat((out1, out2), 1)
+        return out
+
+
+class IEBN(nn.Module):
+    def __init__(self, planes, bn_norm, num_splits):
+        super(IEBN, self).__init__()
+        half1 = int(planes / 2)
+        self.half = half1
+        half2 = planes - half1
+        # self.IN = nn.InstanceNorm2d(half1, affine=True)
+        self.IN = InstanceEnhancementBatchNorm2d(half1)
         self.BN = get_norm(bn_norm, half2, num_splits)
 
     def forward(self, x):
@@ -200,5 +260,14 @@ def get_norm(norm, out_channels, num_splits=1, **kwargs):
             "FrozenBN": FrozenBatchNorm(out_channels),
             "GN": nn.GroupNorm(32, out_channels),
             "syncBN": SyncBatchNorm(out_channels, **kwargs),
+
+            # "AdaptiveBatchNorm2d": AdaptiveBatchNorm2d(out_channels),
+            # "AttentiveNorm2d": AttentiveNorm2d(out_channels),
+            "BatchReNorm2D": BatchReNorm2D(out_channels),
+            "InstanceEnhancementBatchNorm2d": InstanceEnhancementBatchNorm2d(out_channels),
+            "BAN2d": BAN2d(out_channels, affine=True),
+            "InstanceNorm2d": nn.InstanceNorm2d(out_channels, affine=True)
+            # "SwitchNorm2d": SwitchNorm2d(out_channels)
+
         }[norm]
     return norm

@@ -14,8 +14,11 @@ def build_transforms(cfg, is_train=True):
     res = []
 
     if is_train:
-        size_train = cfg.INPUT.SIZE_TRAIN
 
+        size_train = cfg.INPUT.SIZE_TRAIN
+        # Randomly alters the intensities of RGB channels
+        do_coloraugment = cfg.INPUT.CJ.ENABLED
+        ca_prob = cfg.INPUT.CA.PROB
         # Turn all image gray
         do_greyscale = cfg.INPUT.DO_GRAYSCALE
 
@@ -56,6 +59,12 @@ def build_transforms(cfg, is_train=True):
         ct_color_offset = cfg.INPUT.CT.COLOR_OFFSET
         ct_invert = cfg.INPUT.CT.INVERT
 
+        # color augment
+        ca_prob = cfg.INPUT.CA.PROB
+
+        #Random2DTranslation
+        # do_trans2d = cfg.INPUT.T2.ENABLED
+
         if do_ct:
             res.append(ColorTranspose(ct_color_offset, ct_invert))
 
@@ -78,6 +87,9 @@ def build_transforms(cfg, is_train=True):
             res.append(RandomErasing(probability=rea_prob, mean=rea_mean))
         if do_rpt:
             res.append(RandomPatch(prob_happen=rpt_prob))
+        # if do_trans2d:
+        #     res.append(Random2DTranslation(cfg.INPUT.w))
+
 
     else:
         # Turn all image gray
@@ -88,4 +100,10 @@ def build_transforms(cfg, is_train=True):
         size_test = cfg.INPUT.SIZE_TEST
         res.append(T.Resize(size_test, interpolation=3))
     res.append(ToTensor())
+    if is_train:
+        do_coloraugment = cfg.INPUT.CJ.ENABLED
+        ca_prob = cfg.INPUT.CA.PROB
+        if do_coloraugment:
+            res.append(ColorAugmentation(ca_prob))
+
     return T.Compose(res)

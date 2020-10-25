@@ -6,7 +6,7 @@ from fastreid.utils.weight_init import weights_init_kaiming, weights_init_classi
 from .build import REID_HEADS_REGISTRY
 from .classsifiers import get_classifier
 import numpy as np
-
+import torch.nn.functional as F
 
 class ScaledDotProductAttention(nn.Module):
     ''' Scaled Dot-Product Attention '''
@@ -76,7 +76,7 @@ class MultiHeadAttention(nn.Module):
         return output
 
 @REID_HEADS_REGISTRY.register()
-class BNneckHead(nn.Module):
+class ProtoneckHead(nn.Module):
     def __init__(self, cfg, in_feat, num_classes, pool_layer):
         super().__init__()
         self.neck_feat = cfg.MODEL.HEADS.NECK_FEAT
@@ -87,13 +87,13 @@ class BNneckHead(nn.Module):
         hdim = 2048
         self.slf_attn = MultiHeadAttention(1, hdim, hdim, hdim, dropout=0.5)
         # identity classification layer
-        # cls_type = cfg.MODEL.HEADS.CLS_LAYER
-        # if cls_type == 'linear':
-        #     self.classifier = get_classifier(cfg, cls_type, in_feat, num_classes, bias=False)
-        # else:
-        #     self.classifier = get_classifier(cfg, cls_type, in_feat, num_classes)
-        #
-        # self.classifier.apply(weights_init_classifier)
+        cls_type = cfg.MODEL.HEADS.CLS_LAYER
+        if cls_type == 'linear':
+            self.classifier = get_classifier(cfg, cls_type, in_feat, num_classes, bias=False)
+        else:
+            self.classifier = get_classifier(cfg, cls_type, in_feat, num_classes)
+
+        self.classifier.apply(weights_init_classifier)
 
 
     def forward(self, features, targets=None):
@@ -103,7 +103,9 @@ class BNneckHead(nn.Module):
         global_feat = self.pool_layer(features)
         bn_feat = self.bnneck(global_feat)
         bn_feat = bn_feat[..., 0, 0]
-        bn_feat = self.slf_attn(bn_feat)
+        bn_feat = bn_feat.unsqueeze(0)
+        bn_feat = self.slf_attn(bn_feat,bn_feat,bn_feat)
+        bn_feat = bn_feat.squeeze(0)
         # Evaluation
         if not self.training:
 

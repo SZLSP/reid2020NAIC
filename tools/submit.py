@@ -55,7 +55,7 @@ class NAICSubmiter(DefaultPredictor):
 
                 evaluator = ReidEvaluator(self.cfg, num_query)
                 self.cached_info[dataset_name] = (data_loader, num_query, evaluator)
-                extract_feature(self.model, data_loader, evaluator)
+                extract_feature(self.model, data_loader, evaluator, self.cfg)
                 evaluator.cached()
 
             results_i = evaluator.evaluate()
@@ -69,6 +69,7 @@ class NAICSubmiter(DefaultPredictor):
             results[dataset_name]['METRIC'] = self.cfg.TEST.METRIC
             results[dataset_name]['RERANK'] = self.cfg.TEST.RERANK.ENABLED
             results[dataset_name]['ITERATION'] = self.iteration
+            results[dataset_name]['FLIP_FEATS'] = self.cfg.TEST.FLIP_FEATS
             # results[dataset_name]['RERANK_K1'] = self.cfg.TEST.RERANK.K1
             # results[dataset_name]['RERANK_K2'] = self.cfg.TEST.RERANK.K2
             outputs = [dataset_name, score] + list(results[dataset_name].values())
@@ -105,10 +106,22 @@ class NAICSubmiter(DefaultPredictor):
 
         with inference_context(self.model), torch.no_grad():
             for idx, inputs in tqdm(enumerate(data_loader), total=len(data_loader)):
-                outputs = self.model(inputs)
+                if self.cfg.TEST.FLIP_FEATS == 'on':
+                    in_feat = self.cfg.HEADS.REDUCTION_DIM \
+                        if self.cfg.MODEL.HEADS.NAME == 'ReductionHead' else self.cfg.MODEL.HEADS.IN_FEAT
+                    feat = torch.FloatTensor(inputs["images"].size(0), in_feat).zero_().cuda()
+                    for i in range(2):
+                        if i == 1:
+                            inv_idx = torch.arange(inputs["images"].size(3) - 1, -1, -1).long()
+                            inputs["images"] = inputs["images"].index_select(3, inv_idx)
+                        f = self.model(inputs)
+                        feat = feat + f
+                else:
+                    feat = self.model(inputs)
+
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
-                features.append(outputs.cpu())
+                features.append(feat.cpu())
                 img_paths.extend(inputs['img_path'])
         features = torch.cat(features, dim=0)
         img_paths = [osp.split(p)[-1] for p in img_paths]
@@ -154,6 +167,7 @@ class NAICSubmiter(DefaultPredictor):
         query_features = query_features.numpy()
         gallery_features = gallery_features.numpy()
 
+
         if use_dist:
             indices = np.argsort(dist, axis=1)
         else:
@@ -171,6 +185,13 @@ class NAICSubmiter(DefaultPredictor):
         cfg_name = osp.split(args.config_file)[-1][:-4]
         with open(osp.join(save_path, f'{cfg_name}_it{self.iteration}_{postfix}.json'), 'w') as f:
             json.dump(submit, f)
+        img_order = {
+            'query_paths': list(query_paths),
+            'gallery_paths': list(gallery_paths)
+        }
+        with open(osp.join(save_path, f'{cfg_name}_it{self.iteration}_{postfix}_order.json'), 'w') as f:
+            json.dump(img_order, f)
+        np.save(osp.join(save_path, f'{cfg_name}_it{self.iteration}_{postfix}.npy'), np.asarray(dist))
 
     @staticmethod
     def cal_dist(metric: str, query_feat: torch.tensor, gallery_feat: torch.tensor):
@@ -225,8 +246,9 @@ def main(args):
     if args.test_permutation:
         best_test_score = 0
         best_hyperparameter = None
+        flip_feat = 'on'
         for aqe in [False, True]:
-            # for metric in ['cosine', 'euclidean']:
+            # for flip_feat in ['on', 'off']:
             # for k1 in range(8,41,4):
             #     for k2 in range(2,9,1):
             #         aqe = True
@@ -236,6 +258,7 @@ def main(args):
             submiter.cfg.TEST.AQE.ENABLED = aqe
             submiter.cfg.TEST.METRIC = metric
             submiter.cfg.TEST.RERANK.ENABLED = rerank
+            submiter.cfg.TEST.FLIP_FEATS = flip_feat
             # submiter.cfg.TEST.RERANK.K1 = k1
             # submiter.cfg.TEST.RERANK.K2 = k2
             submiter.cfg.freeze()
@@ -243,11 +266,13 @@ def main(args):
             score = get_score(res)
             if score > best_test_score:
                 best_test_score = score
-                best_hyperparameter = [aqe, metric, rerank]
+                best_hyperparameter = [aqe, metric, rerank, flip_feat]
+
         submiter.cfg.defrost()
         submiter.cfg.TEST.AQE.ENABLED = best_hyperparameter[0]
         submiter.cfg.TEST.METRIC = best_hyperparameter[1]
         submiter.cfg.TEST.RERANK.ENABLED = best_hyperparameter[2]
+        submiter.cfg.TEST.FLIP_FEATS = best_hyperparameter[3]
         submiter.cfg.freeze()
         postfix = f'{best_test_score:.4f}'[2:]
         submiter.submit(postfix=postfix)

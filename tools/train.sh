@@ -71,7 +71,7 @@ python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-smt5.yml --gpu-id 5 --test-permutation MODEL.WEIGHTS /home/dgy/project/pytorch/fast-reid/logs/NAIC/R101-ibn-arcF-cj-st-amp-gem/model_0045999.pth
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-smt6.yml --gpu-id 6 --test-permutation MODEL.WEIGHTS /home/dgy/project/pytorch/fast-reid/logs/NAIC/R101-ibn-arcF-cj-st-amp-gem/model_0045999.pth
 
-python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2.yml --gpu-id 2 --test-permutation
+python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-proto.yml --gpu-id 2 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger-swa.yml --gpu-id 3 --test-permutation
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all.yml --gpu-id 4 --test-permutation MODEL.WEIGHTS /home/dgy/project/pytorch/fast-reid/logs/NAIC/R101-ibn-arcF-cj-st-amp-gem/model_0045999.pth
 python ./tools/train_net.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all2.yml --gpu-id 5 --test-permutation

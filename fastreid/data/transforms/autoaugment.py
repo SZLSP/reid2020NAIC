@@ -702,7 +702,8 @@ def augmix_ops(magnitude=10, hparams=None, transforms=None):
 class AugMixAugment:
     """ AugMix Transform
     Adapted and improved from impl here: https://github.com/google-research/augmix/blob/master/imagenet.py
-    From paper: 'AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty -
+    From paper: 'AugMix: A Simple
+     Data Processing Method to Improve Robustness and Uncertainty -
     https://arxiv.org/abs/1912.02781
     """
 

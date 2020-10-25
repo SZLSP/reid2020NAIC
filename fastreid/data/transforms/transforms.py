@@ -4,12 +4,12 @@
 @contact: sherlockliao01@gmail.com
 """
 
-__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose', 'GrayScale']
+__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose', 'GrayScale','ColorAugmentation','Random2DTranslation']
 
 import math
 import random
 from collections import deque
-
+import torch
 import numpy as np
 from PIL import Image
 
@@ -229,3 +229,96 @@ class GrayScale(object):
 
     def __call__(self, image):
         return to_grayscale(image, num_output_channels=3)
+
+class ColorAugmentation(object):
+    """
+    Randomly alters the intensities of RGB channels.
+    Reference:
+        Krizhevsky et al. ImageNet Classification with Deep Convolutional Neural
+        Networks. NIPS 2012.
+    Args:
+        p (float, optional): probability that this operation takes place.
+            Default is 0.5.
+    """
+
+    def __init__(self, p=0.5):
+        self.p = p
+        self.eig_vec = torch.Tensor([
+            [0.4009, 0.7192, -0.5675],
+            [-0.8140, -0.0045, -0.5808],
+            [0.4203, -0.6948, -0.5836],
+        ])
+        self.eig_val = torch.Tensor([[0.2175, 0.0188, 0.0045]])
+
+    def _check_input(self, tensor):
+        assert tensor.dim() == 3 and tensor.size(0) == 3
+
+    def __call__(self, tensor):
+        if random.uniform(0, 1) > self.p:
+            return tensor
+        alpha = torch.normal(mean=torch.zeros_like(self.eig_val)) * 0.1
+        quatity = torch.mm(self.eig_val * alpha, self.eig_vec)
+
+        img = tensor + quatity.view(3, 1, 1)
+
+        return img
+class Random2DTranslation(object):
+    """
+    Randomly translates the input image with a probability.
+    Specifically, given a predefined shape (height, width), the input is first
+    resized with a factor of 1.125, leading to (height*1.125, width*1.125), then
+    a random crop is performed. Such operation is done with a probability.
+    Args:
+        height (int): target image height.
+        width (int): target image width.
+        p (float, optional): probability that this operation takes place.
+            Default is 0.5.
+        interpolation (int, optional): desired interpolation. Default is
+            ``PIL.Image.BILINEAR``
+    """
+
+    def __init__(self, height, width, interpolation=Image.BILINEAR):
+        self.height = height
+        self.width = width
+        self.interpolation = interpolation
+
+    def __call__(self, img):
+        # if random.uniform(0, 1) > self.p:
+        #     return img.resize((self.width, self.height), self.interpolation)
+
+        new_width, new_height = int(round(self.width * 1.08)), int(round(self.height * 1.08))
+        resized_img = img.resize((new_width, new_height), self.interpolation)
+        x_maxrange = new_width - self.width
+        y_maxrange = new_height - self.height
+        x1 = int(round(random.uniform(0, x_maxrange)))
+        y1 = int(round(random.uniform(0, y_maxrange)))
+        croped_img = resized_img.crop((x1, y1, x1 + self.width, y1 + self.height))
+        return croped_img
+
+class Lighting(object):
+    """Lighting noise(AlexNet - style PCA - based noise)"""
+
+    def __init__(self, alphastd):
+        _IMAGENET_PCA = {
+            'eigval': torch.Tensor([0.2175, 0.0188, 0.0045]),
+            'eigvec': torch.Tensor([
+                [-0.5675, 0.7192, 0.4009],
+                [-0.5808, -0.0045, -0.8140],
+                [-0.5836, -0.6948, 0.4203],
+            ])
+        }
+        self.alphastd = alphastd
+        self.eigval = _IMAGENET_PCA['eigval']
+        self.eigvec = _IMAGENET_PCA['eigvec']
+
+    def __call__(self, img):
+        if self.alphastd == 0:
+            return img
+
+        alpha = img.new().resize_(3).normal_(0, self.alphastd)
+        rgb = self.eigvec.type_as(img).clone()\
+            .mul(alpha.view(1, 3).expand(3, 3))\
+            .mul(self.eigval.view(1, 3).expand(3, 3))\
+            .sum(1).squeeze()
+
+        return img.add(rgb.view(3, 1, 1).expand_as(img))

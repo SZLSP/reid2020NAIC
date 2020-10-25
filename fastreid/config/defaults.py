@@ -182,6 +182,10 @@ _C.INPUT.CT.INVERT = True
 # to Gray Scale Image
 _C.INPUT.DO_GRAYSCALE = False
 
+# color augment
+_C.INPUT.CA = CN()
+_C.INPUT.CA.ENABLED = False
+_C.INPUT.CA.PROB = 0.5
 # -----------------------------------------------------------------------------
 # Dataset
 # -----------------------------------------------------------------------------

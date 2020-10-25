@@ -11,6 +11,7 @@ import torch
 from torch import nn
 
 from fastreid.layers import (
+    IBN,
     IEBN,
     Non_local,
     SplAtConv2d,

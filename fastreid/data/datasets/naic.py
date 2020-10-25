@@ -131,12 +131,21 @@ class NAIC19_REP(NAICReID):
         spiltor = ' '
         train_prefix = 'naic19rep'
         return naic_root, img_root, label_dir, spiltor, train_prefix
-
+@DATASET_REGISTRY.register()
+class NAICReID_REP(NAICReID):
+    def get_datainfo(self, root):
+        naic_root = osp.join(root, 'naic_rep')
+        naic_root = osp.join(naic_root, 'train')
+        img_root = osp.join(naic_root, 'images')
+        label_dir = osp.join(naic_root, 'label.txt')
+        spiltor = ':'
+        train_prefix = 'naicrep'
+        return naic_root, img_root, label_dir, spiltor, train_prefix
 
 @DATASET_REGISTRY.register()
 class NAICSubmit(ImageDataset):
     def __init__(self, root='datasets', **kwargs):
-        self.naic_root = osp.join(root, 'naic')
+        self.naic_root = osp.join(root, 'naic_rep')
         required_files = [
             self.naic_root
         ]

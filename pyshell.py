@@ -2,7 +2,7 @@ import os
 
 cmdtext = """
 
-python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2.yml --gpu-id 0 --test-iter 225599 --test-permutation
+python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-proto.yml --gpu-id 0 --test-iter 225599 --test-permutation
 python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-ntl.yml --gpu-id 0 --test-iter 115199,119999,110399 --test-permutation
 python ./tools/submit.py --config-file ./configs/NAIC/R101-ibn-arcF-cj-st-amp-gem-all-ranger2-iebn2.yml --gpu-id 0 --test-iter 225599 --test-permutation
 """

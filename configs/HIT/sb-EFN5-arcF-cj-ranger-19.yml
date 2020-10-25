@@ -1,0 +1,29 @@
+_BASE_: "../Base-Strongerbaseline.yml"
+
+MODEL:
+  BACKBONE:
+    NAME: build_efficientnet_backbone
+    MODEL_NAME: efficientnet-b5
+
+  HEADS:
+    CLS_LAYER: arcFace
+    POOL_LAYER: avgpool
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: True
+
+SOLVER:
+  IMS_PER_BATCH: 128
+
+# ranger to be added
+
+DATASETS:
+  NAMES: ("NAICReID", "NAIC19_REP")
+  TESTS: ("NAICReID",)
+
+OUTPUT_DIR: "logs/HIT/sb-EFN5-arcF-cj-19"

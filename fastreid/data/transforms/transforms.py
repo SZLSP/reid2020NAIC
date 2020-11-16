@@ -4,7 +4,7 @@
 @contact: sherlockliao01@gmail.com
 """
 
-__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose', 'GrayScale','ColorAugmentation','Random2DTranslation']
+__all__ = ['ToTensor', 'RandomErasing', 'RandomPatch', 'AugMix', 'ColorTranspose', 'GrayScale','ColorAugmentation','Random2DTranslation','Lighting']
 
 import math
 import random

@@ -253,7 +253,7 @@ def main(args):
             #     for k2 in range(2,9,1):
             #         aqe = True
             metric = 'cosine'
-            rerank = True
+            rerank = False
             submiter.cfg.defrost()
             submiter.cfg.TEST.AQE.ENABLED = aqe
             submiter.cfg.TEST.METRIC = metric

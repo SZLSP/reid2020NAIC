@@ -59,11 +59,9 @@ def build_transforms(cfg, is_train=True):
         ct_color_offset = cfg.INPUT.CT.COLOR_OFFSET
         ct_invert = cfg.INPUT.CT.INVERT
 
-        # color augment
-        ca_prob = cfg.INPUT.CA.PROB
-
         #Random2DTranslation
-        # do_trans2d = cfg.INPUT.T2.ENABLED
+        do_trans2d = cfg.INPUT.T2.ENABLED
+
 
         if do_ct:
             res.append(ColorTranspose(ct_color_offset, ct_invert))
@@ -79,6 +77,9 @@ def build_transforms(cfg, is_train=True):
         if do_pad:
             res.extend([T.Pad(padding, padding_mode=padding_mode),
                         T.RandomCrop(size_train)])
+        if do_trans2d:
+            res.append(Random2DTranslation(cfg.INPUT.SIZE_TRAIN[0], cfg.INPUT.SIZE_TRAIN[1]))
+
         if do_cj:
             res.append(T.RandomApply([T.ColorJitter(cj_brightness, cj_contrast, cj_saturation, cj_hue)], p=cj_prob))
         if do_augmix:
@@ -87,8 +88,6 @@ def build_transforms(cfg, is_train=True):
             res.append(RandomErasing(probability=rea_prob, mean=rea_mean))
         if do_rpt:
             res.append(RandomPatch(prob_happen=rpt_prob))
-        # if do_trans2d:
-        #     res.append(Random2DTranslation(cfg.INPUT.w))
 
 
     else:
@@ -105,5 +104,10 @@ def build_transforms(cfg, is_train=True):
         ca_prob = cfg.INPUT.CA.PROB
         if do_coloraugment:
             res.append(ColorAugmentation(ca_prob))
+        # Lighting
+        do_lighting = cfg.INPUT.LI.ENABLED
+        alpha_std = cfg.INPUT.LI.ALPHA
+        if do_lighting:
+            res.append(Lighting(alphastd=alpha_std))
 
     return T.Compose(res)

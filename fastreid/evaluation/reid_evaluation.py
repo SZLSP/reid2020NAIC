@@ -62,8 +62,8 @@ class ReidEvaluator(DatasetEvaluator):
 
     @staticmethod
     def cal_dist(metric: str, query_feat: torch.tensor, gallery_feat: torch.tensor):
-        assert metric in ["cosine", "euclidean"], "must choose from [cosine, euclidean], but got {}".format(metric)
-        if metric == "cosine":
+        assert metric in ["cosine", "euclidean","split-cosine"], "must choose from [cosine, euclidean], but got {}".format(metric)
+        if metric == "cosine" or metric == "split-cosine":
             dist = 1 - torch.mm(query_feat, gallery_feat.t())
         else:
             m, n = query_feat.size(0), gallery_feat.size(0)
@@ -74,6 +74,21 @@ class ReidEvaluator(DatasetEvaluator):
             dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
         return dist.cpu().numpy()
 
+    def multi_head_call(self, func, x, weight=None):
+        num_head = self.cfg.MODEL.CAUSAL.NUMS_HEAD
+        head_dim = self.cfg.MODEL.HEADS.IN_FEAT // num_head
+        assert len(x.shape) == 2
+        x_list = torch.split(x, head_dim, dim=1)
+        if weight:
+            y_list = [func(item, weight) for item in x_list]
+        else:
+            y_list = [func(item) for item in x_list]
+        assert len(x_list) == num_head
+        assert len(y_list) == num_head
+        return torch.cat(y_list, dim=1)
+    def l2_norm(self, x):
+        normed_x = x / torch.norm(x, 2, 1, keepdim=True)
+        return normed_x
     def evaluate(self):
         if comm.get_world_size() > 1:
             comm.synchronize()
@@ -116,7 +131,13 @@ class ReidEvaluator(DatasetEvaluator):
         if self.cfg.TEST.METRIC == "cosine":
             query_features = F.normalize(query_features, dim=1)
             gallery_features = F.normalize(gallery_features, dim=1)
-
+        if self.cfg.TEST.METRIC == "split-cosine":
+            #print("split-cosine")
+            scale = self.cfg.MODEL.CAUSAL.TAU / self.cfg.MODEL.CAUSAL.NUMS_HEAD
+            query_features = self.multi_head_call(self.l2_norm,query_features)
+            gallery_features = self.multi_head_call(self.l2_norm,query_features)
+            query_features = F.normalize(query_features, dim=1)
+            gallery_features = F.normalize(gallery_features, dim=1)
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
         metric_method = self.cfg.TEST.METRIC_METHOD
         if self.cfg.TEST.RERANK.ENABLED:

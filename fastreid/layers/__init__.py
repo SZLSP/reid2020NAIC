@@ -16,6 +16,7 @@ from .cosine_loss import ArcFace, ArcCos, AdaCos, CosFace, SphereFace
 from .frn import FRN, TLU
 from .non_local import Non_local
 from .pooling import *
+from .CausalNormClassifier import Causal_Norm_Classifier
 # try:
 #     from .rfconv import RFConv2d
 # except:

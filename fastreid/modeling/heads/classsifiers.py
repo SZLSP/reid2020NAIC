@@ -20,6 +20,8 @@ def get_classifier(cfg, cls_type, in_feat, num_classes, **kwargs):
         classifier = CosFace(in_feat, num_classes, **kwargs)
     elif cls_type == 'sphereFace':
         classifier = SphereFace(in_feat, num_classes, **kwargs)
+    elif cls_type == 'causalNorm':
+        classifier = Causal_Norm_Classifier(cfg,in_feat,num_classes)
     else:
         raise KeyError(f"{cls_type} is invalid, please choose from "
                        f"'linear', 'arcSoftmax', 'amSoftmax','circleSoftmax',"

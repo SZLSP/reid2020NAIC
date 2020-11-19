@@ -1,0 +1,43 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+    NAME: build_resnest_backbone
+
+  HEADS:
+    CLS_LAYER: causalNorm
+    POOL_LAYER: gempool
+
+  CAUSAL:
+    NUMS_HEAD: 3
+    TAU: 16.0
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: True
+  CA:
+    PROB: 0.5
+    ENABLED: True
+
+DATASETS:
+  NAMES: ("NAICReID:1010","NAIC19_REP:1010","NAICReID_REP:0510")
+  TESTS: ("NAICReID_REP:0510",)
+
+SOLVER:
+  OPT: "Ranger"
+  AMP: True
+#  MAX_ITER: 300
+  CHECKPOINT_PERIOD: 2
+  STEPS: [40, 80 , 100]
+  IMS_PER_BATCH: 256
+TEST:
+  EVAL_PERIOD: 2
+  IMS_PER_BATCH: 256
+
+OUTPUT_DIR: "logs/NAICREP/R101-ibn-causal-head3-cj-ca-st-amp-gem-all-ranger2-bs256"

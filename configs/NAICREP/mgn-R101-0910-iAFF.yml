@@ -1,0 +1,36 @@
+_BASE_: "../Base-bagtricks.yml"
+
+MODEL:
+  META_ARCHITECTURE: "MGN"
+  BACKBONE:
+    DEPTH: "101x"
+    WITH_IBN: True
+
+  HEADS:
+    NAME: BNneckHead
+    CLS_LAYER: arcFace
+    POOL_LAYER: avgpool
+    USE_iAFF: true
+
+INPUT:
+  REA:
+    ENABLED: false
+
+  CJ:
+    PROB: 0.5
+    ENABLED: false
+
+
+SOLVER:
+  IMS_PER_BATCH: 128
+  MAX_ITER: 250
+  CHECKPOINT_PERIOD: 2
+
+TEST:
+  EVAL_PERIOD: 2
+
+DATASETS:
+  NAMES: ("NAICReID_REP:0910",)
+  TESTS: ("NAICReID_REP:0910",)
+
+OUTPUT_DIR: "logs/NAICREP/mgn-R101-0910-iAFF"

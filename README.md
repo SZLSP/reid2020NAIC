@@ -1,20 +1,24 @@
-[审核辅佐材料可看此处](辅佐审核材料.md)
+## Introduction
 
-# FastReID
+This is code for contest [NAIC ReID 2020](https://naic.pcl.ac.cn/contest/6).
 
-FastReID is a research platform that implements state-of-the-art re-identification algorithms. It is a groud-up rewrite of the previous version, [reid strong baseline](https://github.com/michuanhaohao/reid-strong-baseline).
+After completing the installation, you can write your own config in `configs` folder and run
 
-## What's New
+```bash
+python ./tools/train_net.py --gpu-id 0 \
+--config-file configs/PATH/TO/YOUR/CONFIG.yml
+```
 
-- [Aug 2020] [Model Distillation](projects/DistillReID) is supported, thanks for [guan'an wang](https://github.com/wangguanan)'s contribution.
-- [Aug 2020] ONNX/TensorRT converter is supported.
-- [Jul 2020] Distributed training with multiple GPUs, it trains much faster.
-- [Jul 2020] `MAX_ITER` in config means `epoch`, it will auto scale to maximum iterations.
-- Includes more features such as circle loss, abundant visualization methods and evaluation metrics, SoTA results on conventional, cross-domain, partial and vehicle re-id, testing on multi-datasets simultaneously, etc.
-- Can be used as a library to support [different projects](projects) on top of it. We'll open source more research projects in this way.
-- Remove [ignite](https://github.com/pytorch/ignite)(a high-level library) dependency and powered by [PyTorch](https://pytorch.org/).
+to train your model and run
 
-We write a [chinese blog](https://l1aoxingyu.github.io/blogpages/reid/2020/05/29/fastreid.html) about this toolbox.
+```bash
+python ./tools/submit.py --config-file configs/PATH/TO/YOUR/CONFIG.yml \
+  --gpu-id 1 --test-permutation
+```
+
+to get the results.
+
+The rest is left for you to explore.
 
 ## Installation
 

@@ -81,6 +81,20 @@ _C.MODEL.HEADS.CLS_LAYER = "linear"  # "arcSoftmax" or "circleSoftmax"
 _C.MODEL.HEADS.MARGIN = 0.15
 _C.MODEL.HEADS.SCALE = 128
 
+# If use Attentional Feature Fusion (AFF)
+_C.MODEL.HEADS.USE_AFF = False
+# If use Iterative Attentional Feature Fusion (iAFF)
+_C.MODEL.HEADS.USE_iAFF = False
+
+
+# ---------------------------------------------------------------------------- #
+# CAUSAL HEAD options
+# ---------------------------------------------------------------------------- #
+_C.MODEL.CAUSAL = CN()
+_C.MODEL.CAUSAL.NUMS_HEAD = 2
+_C.MODEL.CAUSAL.TAU = 16.0
+_C.MODEL.CAUSAL.ALPHA = 3.0
+_C.MODEL.CAUSAL.GAMMA = 0.03125
 # ---------------------------------------------------------------------------- #
 # CAUSAL HEAD options
 # ---------------------------------------------------------------------------- #

@@ -1,13 +1,16 @@
-_BASE_: "../Base-Strongerbaseline.yml"
+_BASE_: "../Base-bagtricks.yml"
 
 MODEL:
+  META_ARCHITECTURE: "MGN"
   BACKBONE:
-    NAME: build_efficientnet_backbone
-    MODEL_NAME: efficientnet-b5
+    DEPTH: "101x"
+    WITH_IBN: True
 
   HEADS:
+    NAME: BNneckHead
     CLS_LAYER: arcFace
     POOL_LAYER: avgpool
+
 
 INPUT:
   REA:
@@ -15,14 +18,13 @@ INPUT:
 
   CJ:
     PROB: 0.5
-    ENABLED: True
+    ENABLED: false
+
 
 SOLVER:
   IMS_PER_BATCH: 128
-  OPT: "Ranger"
-  CHECKPOINT_PERIOD: 2
-  STEPS: [ 40, 90 ]
   MAX_ITER: 250
+  CHECKPOINT_PERIOD: 2
 
 TEST:
   EVAL_PERIOD: 2
@@ -31,4 +33,4 @@ DATASETS:
   NAMES: ("NAICReID:0910","NAIC19_REP:1010")
   TESTS: ("NAICReID:0910",)
 
-OUTPUT_DIR: "logs/HIT/sb-EFN5-arcF-cj-ranger-19"
+OUTPUT_DIR: "logs/NAICREP/mgn-R101-0810"

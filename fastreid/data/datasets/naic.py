@@ -131,6 +131,7 @@ class NAIC19_REP(NAICReID):
         spiltor = ' '
         train_prefix = 'naic19rep'
         return naic_root, img_root, label_dir, spiltor, train_prefix
+
 @DATASET_REGISTRY.register()
 class NAICReID_REP(NAICReID):
     def get_datainfo(self, root):
@@ -150,7 +151,7 @@ class NAICSubmit(ImageDataset):
             self.naic_root
         ]
         self.check_before_run(required_files)
-        imgs_root = osp.join(self.naic_root, 'image_A')
+        imgs_root = osp.join(self.naic_root, 'image_B_v1.1')
         train = []
         query = [(osp.join(imgs_root, 'query', img_name), 1, 1) for img_name
                  in sorted(os.listdir(osp.join(imgs_root, 'query')))]

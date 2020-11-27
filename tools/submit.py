@@ -67,7 +67,7 @@ class NAICSubmiter(DefaultPredictor):
             results[dataset_name]['NAIC'] = score
             results[dataset_name]['AQE'] = self.cfg.TEST.AQE.ENABLED
             results[dataset_name]['METRIC'] = self.cfg.TEST.METRIC
-            results[dataset_name]['RERANK'] = self.cfg.TEST.RERANK.ENABLED
+            results[dataset_name]['RERANK'] = False # self.cfg.TEST.RERANK.ENABLED
             results[dataset_name]['ITERATION'] = self.iteration
             results[dataset_name]['FLIP_FEATS'] = self.cfg.TEST.FLIP_FEATS
             # results[dataset_name]['RERANK_K1'] = self.cfg.TEST.RERANK.K1
@@ -246,7 +246,7 @@ def main(args):
     if args.test_permutation:
         best_test_score = 0
         best_hyperparameter = None
-        flip_feat = 'on'
+        flip_feat = 'off'
         for aqe in [False, True]:
             # for flip_feat in ['on', 'off']:
             # for k1 in range(8,41,4):

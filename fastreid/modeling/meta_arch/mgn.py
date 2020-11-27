@@ -15,6 +15,7 @@ from fastreid.modeling.heads import build_reid_heads
 from fastreid.modeling.losses import CrossEntropyLoss, TripletLoss
 from fastreid.utils.weight_init import weights_init_kaiming
 from .build import META_ARCH_REGISTRY
+from .AFF import AFF, iAFF
 
 
 @META_ARCH_REGISTRY.register()
@@ -101,6 +102,22 @@ class MGN(nn.Module):
         self.b33_pool = self._build_pool_reduce(pool_layer, bn_norm, num_splits, reduce_dim=in_feat)
         self.b33_head = build_reid_heads(cfg, in_feat, num_classes, nn.Identity())
 
+        # AFF (Attentional Feature Fusion)
+        # https://zhuanlan.zhihu.com/p/265807713
+        # https://arxiv.org/pdf/2009.14082.pdf
+        self.use_aff = cfg.MODEL.HEADS.USE_AFF
+        self.use_iaff = cfg.MODEL.HEADS.USE_iAFF
+        if self.use_aff:
+            self.aff12 = AFF(2048, 16, 8, 2)
+            self.aff13 = AFF(2048, 16, 8, 2)
+            self.aff23 = AFF(2048, 16, 8, 2)
+        elif self.use_iaff:
+            self.iaff12 = iAFF(2048, 16, 8, 2)
+            self.iaff13 = iAFF(2048, 16, 8, 2)
+            self.iaff23 = iAFF(2048, 16, 8, 2)
+
+
+
     @staticmethod
     def _build_pool_reduce(pool_layer, bn_norm, num_splits, input_dim=2048, reduce_dim=256):
         pool_reduce = nn.Sequential(
@@ -123,10 +140,28 @@ class MGN(nn.Module):
 
         # branch1
         b1_feat = self.b1(features)
-        b1_pool_feat = self.b1_pool(b1_feat)
-
         # branch2
         b2_feat = self.b2(features)
+        # branch3
+        b3_feat = self.b3(features)
+
+        if self.use_aff:
+            b1_feat, b2_feat, b3_feat = self.aff12(b1_feat, b2_feat) , \
+                    self.aff13(b1_feat, b3_feat), self.aff23(b2_feat, b3_feat)
+            #  b1_feat = self.aff12(b1_feat, b2_feat)
+        if self.use_iaff:
+            b1_feat, b2_feat, b3_feat = self.iaff12(b1_feat, b2_feat) , \
+                    self.iaff13(b1_feat, b3_feat), self.iaff23(b2_feat, b3_feat)
+
+        b1_pool_feat = self.b1_pool(b1_feat)
+
+        # b2_feat.shape
+        # Out[6]: torch.Size([128, 2048, 16, 8])
+        # b1_feat.shape
+        # Out[7]: torch.Size([128, 2048, 16, 8])
+        # b21_feat.shape
+        # Out[8]: torch.Size([128, 2048, 8, 8])
+
         # global
         b2_pool_feat = self.b2_pool(b2_feat)
 
@@ -136,8 +171,6 @@ class MGN(nn.Module):
         # part2
         b22_pool_feat = self.b22_pool(b22_feat)
 
-        # branch3
-        b3_feat = self.b3(features)
         # global
         b3_pool_feat = self.b3_pool(b3_feat)
 
@@ -220,3 +253,5 @@ class MGN(nn.Module):
             loss_dict['loss_triplet_b33'] = TripletLoss(self._cfg)(b33_pool_feat, gt_labels)
 
         return loss_dict
+
+
